@@ -162,4 +162,484 @@
         
         .expense-info { flex: 1; }
         .expense-name { font-weight: 500; font-size: 16px; }
-        .expense-date { font-size: 12px; color: #8
+        .expense-date { font-size: 12px; color: #8E8E93; }
+        .expense-amount { font-size: 18px; font-weight: bold; color: #FF3B30; }
+        
+        /* Friend card */
+        .friend-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .friend-name { font-size: 16px; font-weight: 500; }
+        .friend-balance { font-size: 14px; }
+        .friend-balance.owe { color: #FF3B30; }
+        .friend-balance.owed { color: #34C759; }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal.active { display: flex; }
+        
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 350px;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .modal-buttons .btn { flex: 1; margin-top: 0; }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #8E8E93;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        /* Split checkboxes */
+        .split-friend {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .split-friend input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+        
+        /* Summary row */
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .summary-row:last-child { border-bottom: none; }
+    </style>
+</head>
+<body>
+    <div class="header" id="pageTitle">ExpensePro</div>
+    
+    <div class="content">
+        <!-- DASHBOARD TAB -->
+        <div class="tab-content active" id="tab-dashboard">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                <div class="card">
+                    <div class="card-title">You Owe</div>
+                    <div class="card-value red" id="youOwe">$0.00</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">You Are Owed</div>
+                    <div class="card-value green" id="youOwed">$0.00</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">Total Balance</div>
+                <div class="card-value" id="totalBalance">$0.00</div>
+            </div>
+            
+            <h3 style="margin: 20px 0 10px 0; font-size: 16px;">Recent Expenses</h3>
+            <div id="recentExpenses">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <p>No expenses yet. Add one!</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ADD EXPENSE TAB -->
+        <div class="tab-content" id="tab-add">
+            <div class="card">
+                <div class="input-group">
+                    <label>Description</label>
+                    <input type="text" id="expDesc" placeholder="e.g., Dinner, Groceries">
+                </div>
+                
+                <div class="input-group">
+                    <label>Amount ($)</label>
+                    <input type="number" id="expAmount" placeholder="0.00" step="0.01">
+                </div>
+                
+                <div class="input-group">
+                    <label>Paid By</label>
+                    <select id="expPaidBy">
+                        <option value="You">You</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label>Split With</label>
+                    <div id="splitFriendsList">
+                        <p style="color: #8E8E93; font-size: 14px;">Add friends first to split expenses</p>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="addExpense()">Add Expense</button>
+            </div>
+        </div>
+        
+        <!-- FRIENDS TAB -->
+        <div class="tab-content" id="tab-friends">
+            <div id="friendsList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">👥</div>
+                    <p>No friends added yet</p>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="openFriendModal()">+ Add Friend</button>
+        </div>
+        
+        <!-- SPLIT BILL TAB -->
+        <div class="tab-content" id="tab-split">
+            <div class="card">
+                <h3 style="margin-bottom: 15px;">Quick Split Calculator</h3>
+                
+                <div class="input-group">
+                    <label>Total Bill ($)</label>
+                    <input type="number" id="splitTotal" placeholder="0.00" step="0.01" oninput="calculateSplit()">
+                </div>
+                
+                <div class="input-group">
+                    <label>Number of People</label>
+                    <input type="number" id="splitPeople" placeholder="2" min="2" value="2" oninput="calculateSplit()">
+                </div>
+                
+                <div class="input-group">
+                    <label>Tip (%)</label>
+                    <input type="number" id="splitTip" placeholder="0" min="0" value="0" oninput="calculateSplit()">
+                </div>
+                
+                <div class="card" style="margin-top: 15px; background: #f0f8ff;">
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span id="splitSubtotal">$0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tip Amount</span>
+                        <span id="splitTipAmount">$0.00</span>
+                    </div>
+                    <div class="summary-row" style="font-weight: bold;">
+                        <span>Total</span>
+                        <span id="splitGrandTotal">$0.00</span>
+                    </div>
+                    <div class="summary-row" style="font-weight: bold; color: #007AFF;">
+                        <span>Each Person Pays</span>
+                        <span id="splitPerPerson">$0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bottom Tab Bar -->
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('dashboard', '📊 Dashboard')">
+            <span class="tab-icon">📊</span>
+            <span>Dashboard</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('add', '➕ Add Expense')">
+            <span class="tab-icon">➕</span>
+            <span>Add</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('friends', '👥 Friends')">
+            <span class="tab-icon">👥</span>
+            <span>Friends</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('split', '✂️ Split')">
+            <span class="tab-icon">✂️</span>
+            <span>Split</span>
+        </button>
+    </div>
+    
+    <!-- Friend Modal -->
+    <div class="modal" id="friendModal">
+        <div class="modal-content">
+            <div class="modal-title" id="friendModalTitle">Add Friend</div>
+            <input type="text" class="input-group input" id="friendInput" placeholder="Enter name" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px;">
+            <div class="modal-buttons">
+                <button class="btn" style="background: #8E8E93; color: white;" onclick="closeFriendModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveFriend()">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ===== DATA STORAGE =====
+        let friends = JSON.parse(localStorage.getItem('exp_friends')) || [];
+        let expenses = JSON.parse(localStorage.getItem('exp_expenses')) || [];
+        let editingFriendIndex = -1;
+        
+        // ===== TAB SWITCHING =====
+        function switchTab(tabName, title) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById('tab-' + tabName).classList.add('active');
+            event.target.closest('.tab-btn').classList.add('active');
+            
+            // Update header
+            document.getElementById('pageTitle').textContent = title;
+            
+            // Refresh data
+            if (tabName === 'dashboard') updateDashboard();
+            if (tabName === 'add') updateAddExpenseTab();
+            if (tabName === 'friends') renderFriends();
+        }
+        
+        // ===== DASHBOARD =====
+        function updateDashboard() {
+            let youOwe = 0, youOwed = 0;
+            
+            expenses.forEach(exp => {
+                const splitAmount = exp.amount / exp.splitWith.length;
+                if (exp.paidBy === 'You') {
+                    // You paid, others owe you
+                    exp.splitWith.forEach(person => {
+                        if (person !== 'You') youOwed += splitAmount;
+                    });
+                } else {
+                    // Someone else paid, you owe them
+                    if (exp.splitWith.includes('You')) youOwe += splitAmount;
+                }
+            });
+            
+            document.getElementById('youOwe').textContent = '$' + youOwe.toFixed(2);
+            document.getElementById('youOwed').textContent = '$' + youOwed.toFixed(2);
+            document.getElementById('totalBalance').textContent = '$' + (youOwed - youOwe).toFixed(2);
+            
+            // Recent expenses
+            const recentDiv = document.getElementById('recentExpenses');
+            if (expenses.length === 0) {
+                recentDiv.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><p>No expenses yet. Add one!</p></div>';
+            } else {
+                recentDiv.innerHTML = expenses.slice(-5).reverse().map(exp => `
+                    <div class="expense-item">
+                        <div class="expense-info">
+                            <div class="expense-name">${exp.description}</div>
+                            <div class="expense-date">${exp.paidBy} paid • ${exp.date}</div>
+                        </div>
+                        <div class="expense-amount">$${exp.amount.toFixed(2)}</div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // ===== ADD EXPENSE =====
+        function updateAddExpenseTab() {
+            const paidBySelect = document.getElementById('expPaidBy');
+            paidBySelect.innerHTML = '<option value="You">You</option>';
+            friends.forEach(f => {
+                paidBySelect.innerHTML += `<option value="${f}">${f}</option>`;
+            });
+            
+            const splitList = document.getElementById('splitFriendsList');
+            if (friends.length === 0) {
+                splitList.innerHTML = '<p style="color: #8E8E93; font-size: 14px;">Add friends first to split expenses</p>';
+            } else {
+                splitList.innerHTML = `
+                    <div class="split-friend">
+                        <input type="checkbox" id="splitYou" checked>
+                        <label for="splitYou">You</label>
+                    </div>
+                ` + friends.map((f, i) => `
+                    <div class="split-friend">
+                        <input type="checkbox" id="split${i}" checked>
+                        <label for="split${i}">${f}</label>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        function addExpense() {
+            const desc = document.getElementById('expDesc').value.trim();
+            const amount = parseFloat(document.getElementById('expAmount').value);
+            const paidBy = document.getElementById('expPaidBy').value;
+            
+            if (!desc || isNaN(amount) || amount <= 0) {
+                alert('Please enter description and amount');
+                return;
+            }
+            
+            const splitWith = ['You'];
+            friends.forEach((f, i) => {
+                if (document.getElementById('split' + i)?.checked) splitWith.push(f);
+            });
+            
+            if (!document.getElementById('splitYou')?.checked) {
+                splitWith.splice(splitWith.indexOf('You'), 1);
+            }
+            
+            expenses.push({
+                description: desc,
+                amount: amount,
+                paidBy: paidBy,
+                splitWith: splitWith,
+                date: new Date().toLocaleDateString()
+            });
+            
+            localStorage.setItem('exp_expenses', JSON.stringify(expenses));
+            
+            // Clear form
+            document.getElementById('expDesc').value = '';
+            document.getElementById('expAmount').value = '';
+            
+            alert('Expense added!');
+            switchTab('dashboard', '📊 Dashboard');
+        }
+        
+        // ===== FRIENDS =====
+        function renderFriends() {
+            const list = document.getElementById('friendsList');
+            if (friends.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><p>No friends added yet</p></div>';
+                return;
+            }
+            
+            // Calculate balances
+            let balances = {};
+            friends.forEach(f => balances[f] = 0);
+            
+            expenses.forEach(exp => {
+                const splitAmount = exp.amount / exp.splitWith.length;
+                if (exp.paidBy === 'You') {
+                    exp.splitWith.forEach(person => {
+                        if (person !== 'You' && friends.includes(person)) balances[person] -= splitAmount;
+                    });
+                } else if (friends.includes(exp.paidBy)) {
+                    if (exp.splitWith.includes('You')) balances[exp.paidBy] += splitAmount;
+                }
+            });
+            
+            list.innerHTML = friends.map((f, i) => {
+                const bal = balances[f] || 0;
+                const balClass = bal > 0 ? 'owed' : (bal < 0 ? 'owe' : '');
+                const balText = bal > 0 ? `owes you $${bal.toFixed(2)}` : (bal < 0 ? `you owe $${Math.abs(bal).toFixed(2)}` : 'settled up');
+                
+                return `
+                    <div class="card friend-card">
+                        <div>
+                            <div class="friend-name">${f}</div>
+                            <div class="friend-balance ${balClass}">${balText}</div>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" style="width: auto; padding: 8px 15px; margin-top: 0;" onclick="editFriend(${i})">Edit</button>
+                            <button class="btn btn-danger" style="width: auto; padding: 8px 15px; margin-top: 0;" onclick="deleteFriend(${i})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function openFriendModal() {
+            editingFriendIndex = -1;
+            document.getElementById('friendModalTitle').textContent = 'Add Friend';
+            document.getElementById('friendInput').value = '';
+            document.getElementById('friendModal').classList.add('active');
+        }
+        
+        function editFriend(index) {
+            editingFriendIndex = index;
+            document.getElementById('friendModalTitle').textContent = 'Edit Friend';
+            document.getElementById('friendInput').value = friends[index];
+            document.getElementById('friendModal').classList.add('active');
+        }
+        
+        function closeFriendModal() {
+            document.getElementById('friendModal').classList.remove('active');
+        }
+        
+        function saveFriend() {
+            const name = document.getElementById('friendInput').value.trim();
+            if (!name) return;
+            
+            if (editingFriendIndex >= 0) {
+                // Update old name in expenses too
+                const oldName = friends[editingFriendIndex];
+                expenses.forEach(exp => {
+                    if (exp.paidBy === oldName) exp.paidBy = name;
+                    exp.splitWith = exp.splitWith.map(p => p === oldName ? name : p);
+                });
+                friends[editingFriendIndex] = name;
+            } else {
+                if (friends.includes(name)) {
+                    alert('Friend already exists!');
+                    return;
+                }
+                friends.push(name);
+            }
+            
+            localStorage.setItem('exp_friends', JSON.stringify(friends));
+            localStorage.setItem('exp_expenses', JSON.stringify(expenses));
+            closeFriendModal();
+            renderFriends();
+        }
+        
+        function deleteFriend(index) {
+            if (!confirm('Delete ' + friends[index] + '?')) return;
+            friends.splice(index, 1);
+            localStorage.setItem('exp_friends', JSON.stringify(friends));
+            renderFriends();
+        }
+        
+        // ===== SPLIT CALCULATOR =====
+        function calculateSplit() {
+            const total = parseFloat(document.getElementById('splitTotal').value) || 0;
+            const people = parseInt(document.getElementById('splitPeople').value) || 2;
+            const tipPercent = parseFloat(document.getElementById('splitTip').value) || 0;
+            
+            const tipAmount = total * (tipPercent / 100);
+            const grandTotal = total + tipAmount;
+            const perPerson = people > 0 ? grandTotal / people : 0;
+            
+            document.getElementById('splitSubtotal').textContent = '$' + total.toFixed(2);
+            document.getElementById('splitTipAmount').textContent = '$' + tipAmount.toFixed(2);
+            document.getElementById('splitGrandTotal').textContent = '$' + grandTotal.toFixed(2);
+            document.getElementById('splitPerPerson').textContent = '$' + perPerson.toFixed(2);
+        }
+        
+        // ===== INIT =====
+        updateDashboard();
+    </script>
+</body>
+</html>
