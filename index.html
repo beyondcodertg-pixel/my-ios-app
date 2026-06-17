@@ -52,20 +52,21 @@
         
         .tab-btn {
             flex: 1;
-            padding: 10px;
+            padding: 8px 2px;
             border: none;
             background: none;
             color: #8E8E93;
-            font-size: 12px;
+            font-size: 10px;
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            gap: 2px;
+            min-width: 0;
         }
         
         .tab-btn.active { color: #007AFF; }
-        .tab-icon { font-size: 22px; }
+        .tab-icon { font-size: 20px; }
         
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -228,9 +229,7 @@
         }
         .toggle-switch input[type="checkbox"]:checked::after { left: 26px; }
         
-        .report-section {
-            margin-bottom: 20px;
-        }
+        .report-section { margin-bottom: 20px; }
         .report-header {
             display: flex;
             justify-content: space-between;
@@ -339,7 +338,7 @@
             </div>
         </div>
         
-        <!-- ALL EXPENSES (with edit/delete) -->
+        <!-- ALL EXPENSES -->
         <div class="tab-content" id="tab-expenses">
             <div class="filter-row">
                 <select id="filterMonth" onchange="renderAllExpenses()">
@@ -366,6 +365,31 @@
                 </div>
             </div>
             <button class="btn btn-primary" onclick="openGroupModal()">+ Create Group</button>
+        </div>
+        
+        <!-- SPLIT CALCULATOR -->
+        <div class="tab-content" id="tab-split">
+            <div class="card">
+                <h3 style="margin-bottom: 15px;">Quick Split Calculator</h3>
+                <div class="input-group">
+                    <label>Total Bill</label>
+                    <input type="number" id="splitTotal" placeholder="0.00" step="0.01" oninput="calculateSplit()">
+                </div>
+                <div class="input-group">
+                    <label>Number of People</label>
+                    <input type="number" id="splitPeople" placeholder="2" min="2" value="2" oninput="calculateSplit()">
+                </div>
+                <div class="input-group">
+                    <label>Tip (%)</label>
+                    <input type="number" id="splitTip" placeholder="0" min="0" value="0" oninput="calculateSplit()">
+                </div>
+                <div class="card" style="margin-top: 15px; background: #f0f8ff;">
+                    <div class="summary-row"><span>Subtotal</span><span id="splitSubtotal">$0.00</span></div>
+                    <div class="summary-row"><span>Tip Amount</span><span id="splitTipAmount">$0.00</span></div>
+                    <div class="summary-row" style="font-weight: bold;"><span>Total</span><span id="splitGrandTotal">$0.00</span></div>
+                    <div class="summary-row" style="font-weight: bold; color: #007AFF;"><span>Each Person Pays</span><span id="splitPerPerson">$0.00</span></div>
+                </div>
+            </div>
         </div>
         
         <!-- REPORTS -->
@@ -415,34 +439,9 @@
             </div>
             <button class="btn btn-primary" onclick="openFriendModal()">+ Add Friend</button>
         </div>
-        
-        <!-- SPLIT CALCULATOR -->
-        <div class="tab-content" id="tab-split">
-            <div class="card">
-                <h3 style="margin-bottom: 15px;">Quick Split Calculator</h3>
-                <div class="input-group">
-                    <label>Total Bill</label>
-                    <input type="number" id="splitTotal" placeholder="0.00" step="0.01" oninput="calculateSplit()">
-                </div>
-                <div class="input-group">
-                    <label>Number of People</label>
-                    <input type="number" id="splitPeople" placeholder="2" min="2" value="2" oninput="calculateSplit()">
-                </div>
-                <div class="input-group">
-                    <label>Tip (%)</label>
-                    <input type="number" id="splitTip" placeholder="0" min="0" value="0" oninput="calculateSplit()">
-                </div>
-                <div class="card" style="margin-top: 15px; background: #f0f8ff;">
-                    <div class="summary-row"><span>Subtotal</span><span id="splitSubtotal">$0.00</span></div>
-                    <div class="summary-row"><span>Tip Amount</span><span id="splitTipAmount">$0.00</span></div>
-                    <div class="summary-row" style="font-weight: bold;"><span>Total</span><span id="splitGrandTotal">$0.00</span></div>
-                    <div class="summary-row" style="font-weight: bold; color: #007AFF;"><span>Each Person Pays</span><span id="splitPerPerson">$0.00</span></div>
-                </div>
-            </div>
-        </div>
     </div>
     
-    <!-- Bottom Tab Bar -->
+    <!-- Bottom Tab Bar - 6 Tabs -->
     <div class="tab-bar">
         <button class="tab-btn active" onclick="switchTab('dashboard', '📊 Dashboard')">
             <span class="tab-icon">📊</span><span>Home</span>
@@ -450,11 +449,14 @@
         <button class="tab-btn" onclick="switchTab('add', '➕ Add')">
             <span class="tab-icon">➕</span><span>Add</span>
         </button>
-        <button class="tab-btn" onclick="switchTab('expenses', '📋 Expenses')">
+        <button class="tab-btn" onclick="switchTab('expenses', '📋 List')">
             <span class="tab-icon">📋</span><span>List</span>
         </button>
         <button class="tab-btn" onclick="switchTab('groups', '🎯 Groups')">
             <span class="tab-icon">🎯</span><span>Groups</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('split', '✂️ Split')">
+            <span class="tab-icon">✂️</span><span>Split</span>
         </button>
         <button class="tab-btn" onclick="switchTab('reports', '📈 Reports')">
             <span class="tab-icon">📈</span><span>Reports</span>
@@ -561,6 +563,7 @@
             if (tabName === 'groups') renderGroups();
             if (tabName === 'friends') renderFriends();
             if (tabName === 'reports') { populateReportFilters(); updateMonthlyReport(); updateYearlyReport(); }
+            if (tabName === 'split') calculateSplit();
         }
         
         // ===== DASHBOARD =====
@@ -592,7 +595,7 @@
                 <div class="expense-item" onclick="openEditModal('${exp.id}')">
                     <div class="expense-info">
                         <div class="expense-name">${exp.description}</div>
-                        <div class="expense-date">${exp.paidBy} paid${exp.group ? ' • ' + exp.group : ''} • ${exp.date}</div>
+                        <div class="expense-date">${exp.paidBy} paid${exp.group ? ' • ' + exp.group : ''} • ${exp.dateStr || new Date(exp.date).toLocaleDateString()}</div>
                     </div>
                     <div>
                         <div class="expense-amount">${sym}${exp.amount.toFixed(2)}</div>
@@ -658,7 +661,7 @@
             switchTab('dashboard', '📊 Dashboard');
         }
         
-        // ===== ALL EXPENSES (Edit/Delete) =====
+        // ===== ALL EXPENSES =====
         function populateFilters() {
             const months = [...new Set(expenses.map(e => e.date.substring(0, 7)))].sort().reverse();
             const monthSel = document.getElementById('filterMonth');
