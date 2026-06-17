@@ -129,8 +129,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #f0f0f0;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
         .friend-name { font-size: 16px; font-weight: 500; }
         .friend-balance { font-size: 14px; }
@@ -356,6 +359,17 @@
             </div>
         </div>
         
+        <!-- FRIENDS -->
+        <div class="tab-content" id="tab-friends">
+            <div id="friendsList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">👥</div>
+                    <p>No friends added yet</p>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="openFriendModal()">+ Add Friend</button>
+        </div>
+        
         <!-- GROUPS -->
         <div class="tab-content" id="tab-groups">
             <div id="groupsList">
@@ -376,14 +390,19 @@
                     <input type="number" id="splitTotal" placeholder="0.00" step="0.01" oninput="calculateSplit()">
                 </div>
                 <div class="input-group">
-                    <label>Number of People</label>
-                    <input type="number" id="splitPeople" placeholder="2" min="2" value="2" oninput="calculateSplit()">
-                </div>
-                <div class="input-group">
                     <label>Tip (%)</label>
                     <input type="number" id="splitTip" placeholder="0" min="0" value="0" oninput="calculateSplit()">
                 </div>
+                
+                <div class="input-group">
+                    <label>Select People to Split With</label>
+                    <div id="splitCalcFriendsList">
+                        <p style="color: #8E8E93; font-size: 14px;">Add friends first to use split calculator</p>
+                    </div>
+                </div>
+                
                 <div class="card" style="margin-top: 15px; background: #f0f8ff;">
+                    <div class="summary-row"><span>People Selected</span><span id="splitCount">0</span></div>
                     <div class="summary-row"><span>Subtotal</span><span id="splitSubtotal">$0.00</span></div>
                     <div class="summary-row"><span>Tip Amount</span><span id="splitTipAmount">$0.00</span></div>
                     <div class="summary-row" style="font-weight: bold;"><span>Total</span><span id="splitGrandTotal">$0.00</span></div>
@@ -428,20 +447,9 @@
                 </div>
             </div>
         </div>
-        
-        <!-- FRIENDS -->
-        <div class="tab-content" id="tab-friends">
-            <div id="friendsList">
-                <div class="empty-state">
-                    <div class="empty-state-icon">👥</div>
-                    <p>No friends added yet</p>
-                </div>
-            </div>
-            <button class="btn btn-primary" onclick="openFriendModal()">+ Add Friend</button>
-        </div>
     </div>
     
-    <!-- Bottom Tab Bar - 6 Tabs -->
+    <!-- Bottom Tab Bar - 7 Tabs -->
     <div class="tab-bar">
         <button class="tab-btn active" onclick="switchTab('dashboard', '📊 Dashboard')">
             <span class="tab-icon">📊</span><span>Home</span>
@@ -451,6 +459,9 @@
         </button>
         <button class="tab-btn" onclick="switchTab('expenses', '📋 List')">
             <span class="tab-icon">📋</span><span>List</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('friends', '👥 Friends')">
+            <span class="tab-icon">👥</span><span>Friends</span>
         </button>
         <button class="tab-btn" onclick="switchTab('groups', '🎯 Groups')">
             <span class="tab-icon">🎯</span><span>Groups</span>
@@ -537,10 +548,22 @@
     </div>
     
     <script>
-        // ===== DATA STORAGE =====
-        let friends = JSON.parse(localStorage.getItem('exp_friends')) || [];
-        let expenses = JSON.parse(localStorage.getItem('exp_expenses')) || [];
-        let groups = JSON.parse(localStorage.getItem('exp_groups')) || [];
+        // ===== DATA STORAGE - SAFE INIT (won't overwrite existing data) =====
+        function safeGet(key, defaultVal) {
+            try {
+                const stored = localStorage.getItem(key);
+                if (stored === null || stored === 'null') return defaultVal;
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(defaultVal) && !Array.isArray(parsed)) return defaultVal;
+                return parsed;
+            } catch (e) {
+                return defaultVal;
+            }
+        }
+        
+        let friends = safeGet('exp_friends', []);
+        let expenses = safeGet('exp_expenses', []);
+        let groups = safeGet('exp_groups', []);
         let editingFriendIndex = -1;
         let editingGroupIndex = -1;
         
@@ -560,10 +583,10 @@
             if (tabName === 'dashboard') updateDashboard();
             if (tabName === 'add') updateAddExpenseTab();
             if (tabName === 'expenses') { populateFilters(); renderAllExpenses(); }
-            if (tabName === 'groups') renderGroups();
             if (tabName === 'friends') renderFriends();
+            if (tabName === 'groups') renderGroups();
+            if (tabName === 'split') updateSplitCalcFriends();
             if (tabName === 'reports') { populateReportFilters(); updateMonthlyReport(); updateYearlyReport(); }
-            if (tabName === 'split') calculateSplit();
         }
         
         // ===== DASHBOARD =====
@@ -736,6 +759,88 @@
             updateDashboard();
         }
         
+        // ===== FRIENDS =====
+        function renderFriends() {
+            const list = document.getElementById('friendsList');
+            if (friends.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><p>No friends added yet</p></div>';
+                return;
+            }
+            
+            let balances = {};
+            friends.forEach(f => balances[f] = 0);
+            expenses.forEach(exp => {
+                const splitAmount = exp.amount / exp.splitWith.length;
+                if (exp.paidBy === 'You') {
+                    exp.splitWith.forEach(p => { if (p !== 'You' && friends.includes(p)) balances[p] -= splitAmount; });
+                } else if (friends.includes(exp.paidBy) && exp.splitWith.includes('You')) {
+                    balances[exp.paidBy] += splitAmount;
+                }
+            });
+            
+            list.innerHTML = friends.map((f, i) => {
+                const bal = balances[f] || 0;
+                const balClass = bal > 0 ? 'owed' : (bal < 0 ? 'owe' : '');
+                const balText = bal > 0 ? `owes you $${bal.toFixed(2)}` : (bal < 0 ? `you owe $${Math.abs(bal).toFixed(2)}` : 'settled up');
+                return `
+                    <div class="friend-card">
+                        <div><div class="friend-name">${f}</div><div class="friend-balance ${balClass}">${balText}</div></div>
+                        <div>
+                            <button class="btn btn-primary btn-small" onclick="editFriend(${i})">Edit</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteFriend(${i})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function openFriendModal() {
+            editingFriendIndex = -1;
+            document.getElementById('friendModalTitle').textContent = 'Add Friend';
+            document.getElementById('friendInput').value = '';
+            document.getElementById('friendModal').classList.add('active');
+        }
+        
+        function editFriend(index) {
+            editingFriendIndex = index;
+            document.getElementById('friendModalTitle').textContent = 'Edit Friend';
+            document.getElementById('friendInput').value = friends[index];
+            document.getElementById('friendModal').classList.add('active');
+        }
+        
+        function closeFriendModal() {
+            document.getElementById('friendModal').classList.remove('active');
+        }
+        
+        function saveFriend() {
+            const name = document.getElementById('friendInput').value.trim();
+            if (!name) return;
+            
+            if (editingFriendIndex >= 0) {
+                const oldName = friends[editingFriendIndex];
+                expenses.forEach(exp => {
+                    if (exp.paidBy === oldName) exp.paidBy = name;
+                    exp.splitWith = exp.splitWith.map(p => p === oldName ? name : p);
+                });
+                friends[editingFriendIndex] = name;
+            } else {
+                if (friends.includes(name)) { alert('Friend already exists!'); return; }
+                friends.push(name);
+            }
+            
+            localStorage.setItem('exp_friends', JSON.stringify(friends));
+            localStorage.setItem('exp_expenses', JSON.stringify(expenses));
+            closeFriendModal();
+            renderFriends();
+        }
+        
+        function deleteFriend(index) {
+            if (!confirm('Delete ' + friends[index] + '?')) return;
+            friends.splice(index, 1);
+            localStorage.setItem('exp_friends', JSON.stringify(friends));
+            renderFriends();
+        }
+        
         // ===== GROUPS =====
         function renderGroups() {
             const list = document.getElementById('groupsList');
@@ -816,6 +921,40 @@
             localStorage.setItem('exp_groups', JSON.stringify(groups));
             localStorage.setItem('exp_expenses', JSON.stringify(expenses));
             renderGroups();
+        }
+        
+        // ===== SPLIT CALCULATOR WITH FRIENDS =====
+        function updateSplitCalcFriends() {
+            const list = document.getElementById('splitCalcFriendsList');
+            if (friends.length === 0) {
+                list.innerHTML = '<p style="color: #8E8E93; font-size: 14px;">Add friends first to use split calculator</p>';
+                return;
+            }
+            
+            list.innerHTML = `<div class="split-friend"><input type="checkbox" id="calcSplitYou" checked onchange="calculateSplit()"><label for="calcSplitYou">You</label></div>`
+                + friends.map((f, i) => `<div class="split-friend"><input type="checkbox" id="calcSplit${i}" checked onchange="calculateSplit()"><label for="calcSplit${i}">${f}</label></div>`).join('');
+            
+            calculateSplit();
+        }
+        
+        function calculateSplit() {
+            const total = parseFloat(document.getElementById('splitTotal').value) || 0;
+            const tipPercent = parseFloat(document.getElementById('splitTip').value) || 0;
+            
+            // Count selected people
+            let count = 0;
+            if (document.getElementById('calcSplitYou')?.checked) count++;
+            friends.forEach((f, i) => { if (document.getElementById('calcSplit' + i)?.checked) count++; });
+            
+            const tipAmount = total * (tipPercent / 100);
+            const grandTotal = total + tipAmount;
+            const perPerson = count > 0 ? grandTotal / count : 0;
+            
+            document.getElementById('splitCount').textContent = count;
+            document.getElementById('splitSubtotal').textContent = '$' + total.toFixed(2);
+            document.getElementById('splitTipAmount').textContent = '$' + tipAmount.toFixed(2);
+            document.getElementById('splitGrandTotal').textContent = '$' + grandTotal.toFixed(2);
+            document.getElementById('splitPerPerson').textContent = '$' + perPerson.toFixed(2);
         }
         
         // ===== REPORTS & EXPORT =====
@@ -908,103 +1047,6 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-        }
-        
-        // ===== FRIENDS =====
-        function renderFriends() {
-            const list = document.getElementById('friendsList');
-            if (friends.length === 0) {
-                list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><p>No friends added yet</p></div>';
-                return;
-            }
-            
-            let balances = {};
-            friends.forEach(f => balances[f] = 0);
-            expenses.forEach(exp => {
-                const splitAmount = exp.amount / exp.splitWith.length;
-                if (exp.paidBy === 'You') {
-                    exp.splitWith.forEach(p => { if (p !== 'You' && friends.includes(p)) balances[p] -= splitAmount; });
-                } else if (friends.includes(exp.paidBy) && exp.splitWith.includes('You')) {
-                    balances[exp.paidBy] += splitAmount;
-                }
-            });
-            
-            list.innerHTML = friends.map((f, i) => {
-                const bal = balances[f] || 0;
-                const balClass = bal > 0 ? 'owed' : (bal < 0 ? 'owe' : '');
-                const balText = bal > 0 ? `owes you $${bal.toFixed(2)}` : (bal < 0 ? `you owe $${Math.abs(bal).toFixed(2)}` : 'settled up');
-                return `
-                    <div class="card friend-card">
-                        <div><div class="friend-name">${f}</div><div class="friend-balance ${balClass}">${balText}</div></div>
-                        <div>
-                            <button class="btn btn-primary btn-small" onclick="editFriend(${i})">Edit</button>
-                            <button class="btn btn-danger btn-small" onclick="deleteFriend(${i})">Delete</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-        
-        function openFriendModal() {
-            editingFriendIndex = -1;
-            document.getElementById('friendModalTitle').textContent = 'Add Friend';
-            document.getElementById('friendInput').value = '';
-            document.getElementById('friendModal').classList.add('active');
-        }
-        
-        function editFriend(index) {
-            editingFriendIndex = index;
-            document.getElementById('friendModalTitle').textContent = 'Edit Friend';
-            document.getElementById('friendInput').value = friends[index];
-            document.getElementById('friendModal').classList.add('active');
-        }
-        
-        function closeFriendModal() {
-            document.getElementById('friendModal').classList.remove('active');
-        }
-        
-        function saveFriend() {
-            const name = document.getElementById('friendInput').value.trim();
-            if (!name) return;
-            
-            if (editingFriendIndex >= 0) {
-                const oldName = friends[editingFriendIndex];
-                expenses.forEach(exp => {
-                    if (exp.paidBy === oldName) exp.paidBy = name;
-                    exp.splitWith = exp.splitWith.map(p => p === oldName ? name : p);
-                });
-                friends[editingFriendIndex] = name;
-            } else {
-                if (friends.includes(name)) { alert('Friend already exists!'); return; }
-                friends.push(name);
-            }
-            
-            localStorage.setItem('exp_friends', JSON.stringify(friends));
-            localStorage.setItem('exp_expenses', JSON.stringify(expenses));
-            closeFriendModal();
-            renderFriends();
-        }
-        
-        function deleteFriend(index) {
-            if (!confirm('Delete ' + friends[index] + '?')) return;
-            friends.splice(index, 1);
-            localStorage.setItem('exp_friends', JSON.stringify(friends));
-            renderFriends();
-        }
-        
-        // ===== SPLIT CALCULATOR =====
-        function calculateSplit() {
-            const total = parseFloat(document.getElementById('splitTotal').value) || 0;
-            const people = parseInt(document.getElementById('splitPeople').value) || 2;
-            const tipPercent = parseFloat(document.getElementById('splitTip').value) || 0;
-            const tipAmount = total * (tipPercent / 100);
-            const grandTotal = total + tipAmount;
-            const perPerson = people > 0 ? grandTotal / people : 0;
-            
-            document.getElementById('splitSubtotal').textContent = '$' + total.toFixed(2);
-            document.getElementById('splitTipAmount').textContent = '$' + tipAmount.toFixed(2);
-            document.getElementById('splitGrandTotal').textContent = '$' + grandTotal.toFixed(2);
-            document.getElementById('splitPerPerson').textContent = '$' + perPerson.toFixed(2);
         }
         
         // ===== INIT =====
