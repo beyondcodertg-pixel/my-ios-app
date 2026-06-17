@@ -11,7 +11,7 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
+            background: #f0f2f5;
             height: 100vh;
             width: 100vw;
             overflow: hidden;
@@ -20,7 +20,7 @@
         }
         
         .header {
-            background: #007AFF;
+            background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
             color: white;
             padding: 15px;
             padding-top: max(15px, env(safe-area-inset-top));
@@ -28,6 +28,7 @@
             font-size: 18px;
             font-weight: bold;
             flex-shrink: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
         .content {
@@ -73,85 +74,208 @@
         
         .card {
             background: white;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
         }
         
-        .card-title { font-size: 14px; color: #8E8E93; margin-bottom: 5px; }
-        .card-value { font-size: 24px; font-weight: bold; color: #007AFF; }
-        .card-value.red { color: #FF3B30; }
-        .card-value.green { color: #34C759; }
-        
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
+        /* Professional Dashboard Styles */
+        .dashboard-header {
+            background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            margin-bottom: 15px;
         }
         
-        .btn-primary { background: #007AFF; color: white; }
-        .btn-danger { background: #FF3B30; color: white; }
-        .btn-success { background: #34C759; color: white; }
-        .btn-secondary { background: #8E8E93; color: white; }
-        .btn-small { width: auto; padding: 6px 12px; font-size: 13px; margin-top: 0; }
+        .dashboard-header .greeting {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 4px;
+        }
         
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 14px; color: #8E8E93; margin-bottom: 5px; }
-        .input-group input, .input-group select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            font-size: 16px;
+        .dashboard-header .total-balance-label {
+            font-size: 13px;
+            opacity: 0.8;
+            margin-top: 15px;
+        }
+        
+        .dashboard-header .total-balance {
+            font-size: 32px;
+            font-weight: bold;
+        }
+        
+        .balance-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .balance-card {
             background: white;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        
+        .balance-card .label {
+            font-size: 12px;
+            color: #8E8E93;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        
+        .balance-card .amount {
+            font-size: 22px;
+            font-weight: bold;
+        }
+        
+        .balance-card.owe .amount { color: #FF3B30; }
+        .balance-card.owed .amount { color: #34C759; }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 20px 0 10px 0;
+            color: #1c1c1e;
+        }
+        
+        .quick-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-box {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        
+        .stat-box .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007AFF;
+        }
+        
+        .stat-box .stat-label {
+            font-size: 11px;
+            color: #8E8E93;
+            margin-top: 4px;
+        }
+        
+        .category-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .category-bar .cat-name {
+            width: 100px;
+            font-size: 13px;
+            color: #3c3c3c;
+        }
+        
+        .category-bar .cat-bar-bg {
+            flex: 1;
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0 10px;
+        }
+        
+        .category-bar .cat-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        
+        .category-bar .cat-amount {
+            width: 70px;
+            text-align: right;
+            font-size: 13px;
+            font-weight: 500;
         }
         
         .expense-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 0;
+            padding: 14px 0;
             border-bottom: 1px solid #f0f0f0;
         }
         .expense-item:last-child { border-bottom: none; }
         .expense-info { flex: 1; }
-        .expense-name { font-weight: 500; font-size: 16px; }
-        .expense-date { font-size: 12px; color: #8E8E93; }
-        .expense-amount { font-size: 18px; font-weight: bold; color: #FF3B30; }
-        .expense-currency { font-size: 14px; color: #8E8E93; }
+        .expense-name { font-weight: 500; font-size: 15px; color: #1c1c1e; }
+        .expense-date { font-size: 12px; color: #8E8E93; margin-top: 2px; }
+        .expense-amount { font-size: 16px; font-weight: 600; }
+        .expense-amount.owe { color: #FF3B30; }
+        .expense-amount.owed { color: #34C759; }
+        .expense-currency { font-size: 11px; color: #8E8E93; text-align: right; }
+        
+        .btn {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+        
+        .btn-primary { background: #007AFF; color: white; }
+        .btn-danger { background: #FF3B30; color: white; }
+        .btn-success { background: #34C759; color: white; }
+        .btn-secondary { background: #8E8E93; color: white; }
+        .btn-small { width: auto; padding: 8px 14px; font-size: 13px; margin-top: 0; border-radius: 8px; }
+        
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 13px; color: #8E8E93; margin-bottom: 6px; font-weight: 500; }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            background: white;
+        }
         
         .friend-card {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px;
+            padding: 16px;
             background: white;
-            border-radius: 12px;
+            border-radius: 16px;
             margin-bottom: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
         }
-        .friend-name { font-size: 16px; font-weight: 500; }
-        .friend-balance { font-size: 14px; }
+        .friend-name { font-size: 15px; font-weight: 600; color: #1c1c1e; }
+        .friend-balance { font-size: 13px; margin-top: 2px; }
         .friend-balance.owe { color: #FF3B30; }
         .friend-balance.owed { color: #34C759; }
+        .friend-balance.settled { color: #8E8E93; }
         
         .group-card {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px;
+            padding: 16px;
             background: white;
-            border-radius: 12px;
+            border-radius: 16px;
             margin-bottom: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
         }
-        .group-name { font-size: 16px; font-weight: 500; }
-        .group-count { font-size: 13px; color: #8E8E93; }
+        .group-name { font-size: 15px; font-weight: 600; color: #1c1c1e; }
+        .group-count { font-size: 12px; color: #8E8E93; margin-top: 2px; }
         
         .modal {
             display: none;
@@ -166,15 +290,15 @@
         .modal.active { display: flex; }
         .modal-content {
             background: white;
-            padding: 20px;
-            border-radius: 16px;
+            padding: 24px;
+            border-radius: 20px;
             width: 90%;
             max-width: 350px;
             max-height: 80vh;
             overflow-y: auto;
         }
-        .modal-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; }
-        .modal-buttons { display: flex; gap: 10px; margin-top: 15px; }
+        .modal-title { font-size: 18px; font-weight: bold; margin-bottom: 20px; color: #1c1c1e; }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
         .modal-buttons .btn { flex: 1; margin-top: 0; }
         
         .empty-state { text-align: center; padding: 40px 20px; color: #8E8E93; }
@@ -183,21 +307,22 @@
         .split-friend {
             display: flex;
             align-items: center;
-            padding: 10px;
+            padding: 12px;
             background: #f9f9f9;
-            border-radius: 10px;
+            border-radius: 12px;
             margin-bottom: 8px;
         }
         .split-friend input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
+            width: 22px;
+            height: 22px;
+            margin-right: 12px;
+            accent-color: #007AFF;
         }
         
         .summary-row {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
+            padding: 12px 0;
             border-bottom: 1px solid #f0f0f0;
         }
         .summary-row:last-child { border-bottom: none; }
@@ -205,41 +330,46 @@
         .toggle-switch {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 12px;
+            margin-top: 12px;
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 12px;
         }
         .toggle-switch input[type="checkbox"] {
             width: 50px;
-            height: 26px;
+            height: 28px;
             -webkit-appearance: none;
             appearance: none;
             background: #ddd;
-            border-radius: 13px;
+            border-radius: 14px;
             position: relative;
             cursor: pointer;
+            flex-shrink: 0;
         }
         .toggle-switch input[type="checkbox"]:checked { background: #34C759; }
         .toggle-switch input[type="checkbox"]::after {
             content: '';
             position: absolute;
-            width: 22px;
-            height: 22px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             background: white;
             top: 2px;
             left: 2px;
             transition: 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
-        .toggle-switch input[type="checkbox"]:checked::after { left: 26px; }
+        .toggle-switch input[type="checkbox"]:checked::after { left: 24px; }
         
-        .report-section { margin-bottom: 20px; }
+        .report-section { margin-bottom: 24px; }
         .report-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
-        .report-title { font-size: 16px; font-weight: bold; }
+        .report-title { font-size: 16px; font-weight: 600; color: #1c1c1e; }
         
         .filter-row {
             display: flex;
@@ -248,10 +378,35 @@
         }
         .filter-row select {
             flex: 1;
-            padding: 10px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
             font-size: 14px;
+            background: white;
+        }
+        
+        .chart-bar-container {
+            margin-bottom: 12px;
+        }
+        
+        .chart-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+        
+        .chart-bar-bg {
+            height: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .chart-bar-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.5s ease;
         }
     </style>
 </head>
@@ -261,23 +416,53 @@
     <div class="content">
         <!-- DASHBOARD -->
         <div class="tab-content active" id="tab-dashboard">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                <div class="card">
-                    <div class="card-title">You Owe</div>
-                    <div class="card-value red" id="youOwe">$0.00</div>
-                </div>
-                <div class="card">
-                    <div class="card-title">You Are Owed</div>
-                    <div class="card-value green" id="youOwed">$0.00</div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-title">Total Balance</div>
-                <div class="card-value" id="totalBalance">$0.00</div>
+            <!-- Top Balance Card -->
+            <div class="dashboard-header">
+                <div class="greeting" id="greetingText">Good morning</div>
+                <div class="total-balance-label">Total Balance</div>
+                <div class="total-balance" id="dashTotalBalance">₹0.00</div>
             </div>
             
-            <h3 style="margin: 20px 0 10px 0; font-size: 16px;">Recent Expenses</h3>
-            <div id="recentExpenses">
+            <!-- You Owe / You Are Owed -->
+            <div class="balance-cards">
+                <div class="balance-card owe">
+                    <div class="label">You Owe</div>
+                    <div class="amount" id="dashYouOwe">₹0.00</div>
+                </div>
+                <div class="balance-card owed">
+                    <div class="label">You Are Owed</div>
+                    <div class="amount" id="dashYouOwed">₹0.00</div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="section-title">Quick Stats</div>
+            <div class="quick-stats" id="quickStats">
+                <div class="stat-box">
+                    <div class="stat-value" id="statTotalExp">0</div>
+                    <div class="stat-label">Expenses</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="statFriends">0</div>
+                    <div class="stat-label">Friends</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="statGroups">0</div>
+                    <div class="stat-label">Groups</div>
+                </div>
+            </div>
+            
+            <!-- Spending by Group -->
+            <div class="section-title">Spending by Group</div>
+            <div class="card" id="spendingByGroup">
+                <div class="empty-state" style="padding: 20px;">
+                    <p>No expenses yet</p>
+                </div>
+            </div>
+            
+            <!-- Recent Expenses -->
+            <div class="section-title">Recent Expenses</div>
+            <div class="card" id="recentExpenses">
                 <div class="empty-state">
                     <div class="empty-state-icon">📝</div>
                     <p>No expenses yet. Add one!</p>
@@ -298,10 +483,10 @@
                     <div style="display: flex; gap: 10px;">
                         <input type="number" id="expAmount" placeholder="0.00" step="0.01" style="flex: 2;">
                         <select id="expCurrency" style="flex: 1;">
-                            <option value="USD" selected>USD ($)</option>
+                            <option value="USD">USD ($)</option>
                             <option value="EUR">EUR (€)</option>
                             <option value="GBP">GBP (£)</option>
-                            <option value="INR">INR (₹)</option>
+                            <option value="INR" selected>INR (₹)</option>
                             <option value="JPY">JPY (¥)</option>
                             <option value="CAD">CAD ($)</option>
                             <option value="AUD">AUD ($)</option>
@@ -384,7 +569,7 @@
         <!-- SPLIT CALCULATOR -->
         <div class="tab-content" id="tab-split">
             <div class="card">
-                <h3 style="margin-bottom: 15px;">Quick Split Calculator</h3>
+                <h3 style="margin-bottom: 15px; font-size: 18px;">Quick Split Calculator</h3>
                 <div class="input-group">
                     <label>Total Bill</label>
                     <input type="number" id="splitTotal" placeholder="0.00" step="0.01" oninput="calculateSplit()">
@@ -401,12 +586,12 @@
                     </div>
                 </div>
                 
-                <div class="card" style="margin-top: 15px; background: #f0f8ff;">
-                    <div class="summary-row"><span>People Selected</span><span id="splitCount">0</span></div>
-                    <div class="summary-row"><span>Subtotal</span><span id="splitSubtotal">$0.00</span></div>
-                    <div class="summary-row"><span>Tip Amount</span><span id="splitTipAmount">$0.00</span></div>
-                    <div class="summary-row" style="font-weight: bold;"><span>Total</span><span id="splitGrandTotal">$0.00</span></div>
-                    <div class="summary-row" style="font-weight: bold; color: #007AFF;"><span>Each Person Pays</span><span id="splitPerPerson">$0.00</span></div>
+                <div class="card" style="margin-top: 15px; background: linear-gradient(135deg, #f0f8ff 0%, #e6f0ff 100%); border: 1px solid #d0e3ff;">
+                    <div class="summary-row"><span style="color: #8E8E93;">People Selected</span><span id="splitCount" style="font-weight: 600;">0</span></div>
+                    <div class="summary-row"><span style="color: #8E8E93;">Subtotal</span><span id="splitSubtotal">₹0.00</span></div>
+                    <div class="summary-row"><span style="color: #8E8E93;">Tip Amount</span><span id="splitTipAmount">₹0.00</span></div>
+                    <div class="summary-row" style="font-weight: bold; font-size: 16px;"><span>Total</span><span id="splitGrandTotal">₹0.00</span></div>
+                    <div class="summary-row" style="font-weight: bold; color: #007AFF; font-size: 16px;"><span>Each Person Pays</span><span id="splitPerPerson">₹0.00</span></div>
                 </div>
             </div>
         </div>
@@ -478,7 +663,7 @@
     <div class="modal" id="friendModal">
         <div class="modal-content">
             <div class="modal-title" id="friendModalTitle">Add Friend</div>
-            <input type="text" id="friendInput" placeholder="Enter name" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; margin-bottom: 15px;">
+            <input type="text" id="friendInput" placeholder="Enter name" style="width: 100%; padding: 14px; border: 1px solid #e0e0e0; border-radius: 12px; font-size: 16px; margin-bottom: 15px;">
             <div class="modal-buttons">
                 <button class="btn btn-secondary" onclick="closeFriendModal()">Cancel</button>
                 <button class="btn btn-primary" onclick="saveFriend()">Save</button>
@@ -548,7 +733,7 @@
     </div>
     
     <script>
-        // ===== DATA STORAGE - SAFE INIT (won't overwrite existing data) =====
+        // ===== DATA STORAGE =====
         function safeGet(key, defaultVal) {
             try {
                 const stored = localStorage.getItem(key);
@@ -572,6 +757,18 @@
             'JPY': '¥', 'CAD': '$', 'AUD': '$', 'SGD': '$', 'AED': 'د.إ'
         };
         
+        // ===== HELPER: Get user's preferred display currency =====
+        function getDisplayCurrency() {
+            // Use INR as default if any expense is in INR, otherwise USD
+            const hasINR = expenses.some(e => e.currency === 'INR');
+            return hasINR ? 'INR' : 'USD';
+        }
+        
+        function formatMoney(amount, currency) {
+            const sym = CURRENCY_SYMBOLS[currency] || '$';
+            return sym + amount.toFixed(2);
+        }
+        
         // ===== TAB SWITCHING =====
         function switchTab(tabName, title) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -591,19 +788,71 @@
         
         // ===== DASHBOARD =====
         function updateDashboard() {
-            let youOwe = 0, youOwed = 0;
+            const hour = new Date().getHours();
+            let greeting = 'Good morning';
+            if (hour >= 12) greeting = 'Good afternoon';
+            if (hour >= 17) greeting = 'Good evening';
+            document.getElementById('greetingText').textContent = greeting;
+            
+            // Calculate balances per currency
+            let balancesByCurrency = {};
             expenses.forEach(exp => {
+                const curr = exp.currency || 'USD';
+                if (!balancesByCurrency[curr]) balancesByCurrency[curr] = { owe: 0, owed: 0 };
+                
                 const splitAmount = exp.amount / exp.splitWith.length;
                 if (exp.paidBy === 'You') {
-                    exp.splitWith.forEach(p => { if (p !== 'You') youOwed += splitAmount; });
+                    exp.splitWith.forEach(p => { if (p !== 'You') balancesByCurrency[curr].owed += splitAmount; });
                 } else if (exp.splitWith.includes('You')) {
-                    youOwe += splitAmount;
+                    balancesByCurrency[curr].owe += splitAmount;
                 }
             });
-            document.getElementById('youOwe').textContent = '$' + youOwe.toFixed(2);
-            document.getElementById('youOwed').textContent = '$' + youOwed.toFixed(2);
-            document.getElementById('totalBalance').textContent = '$' + (youOwed - youOwe).toFixed(2);
             
+            // Display in user's preferred currency
+            const displayCurr = getDisplayCurrency();
+            const bal = balancesByCurrency[displayCurr] || { owe: 0, owed: 0 };
+            const total = bal.owed - bal.owe;
+            
+            document.getElementById('dashYouOwe').textContent = formatMoney(bal.owe, displayCurr);
+            document.getElementById('dashYouOwed').textContent = formatMoney(bal.owed, displayCurr);
+            document.getElementById('dashTotalBalance').textContent = formatMoney(total, displayCurr);
+            
+            // Quick Stats
+            document.getElementById('statTotalExp').textContent = expenses.length;
+            document.getElementById('statFriends').textContent = friends.length;
+            document.getElementById('statGroups').textContent = groups.length;
+            
+            // Spending by Group (chart)
+            const groupSpending = {};
+            expenses.forEach(e => {
+                const g = e.group || 'Personal';
+                groupSpending[g] = (groupSpending[g] || 0) + e.amount;
+            });
+            
+            const groupDiv = document.getElementById('spendingByGroup');
+            if (Object.keys(groupSpending).length === 0) {
+                groupDiv.innerHTML = '<div class="empty-state" style="padding: 20px;"><p>No expenses yet</p></div>';
+            } else {
+                const totalSpend = Object.values(groupSpending).reduce((a, b) => a + b, 0);
+                const colors = ['#007AFF', '#34C759', '#FF9500', '#FF3B30', '#5856D6', '#AF52DE', '#5AC8FA'];
+                
+                groupDiv.innerHTML = Object.entries(groupSpending).map(([name, amount], i) => {
+                    const pct = (amount / totalSpend * 100).toFixed(1);
+                    return `
+                        <div class="chart-bar-container">
+                            <div class="chart-label">
+                                <span>${name}</span>
+                                <span style="font-weight: 600;">${formatMoney(amount, displayCurr)} (${pct}%)</span>
+                            </div>
+                            <div class="chart-bar-bg">
+                                <div class="chart-bar-fill" style="width: ${pct}%; background: ${colors[i % colors.length]};"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Recent Expenses
             const recentDiv = document.getElementById('recentExpenses');
             if (expenses.length === 0) {
                 recentDiv.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><p>No expenses yet. Add one!</p></div>';
@@ -614,6 +863,7 @@
         
         function formatExpenseItem(exp) {
             const sym = CURRENCY_SYMBOLS[exp.currency] || '$';
+            const isOwed = exp.paidBy === 'You';
             return `
                 <div class="expense-item" onclick="openEditModal('${exp.id}')">
                     <div class="expense-info">
@@ -621,7 +871,7 @@
                         <div class="expense-date">${exp.paidBy} paid${exp.group ? ' • ' + exp.group : ''} • ${exp.dateStr || new Date(exp.date).toLocaleDateString()}</div>
                     </div>
                     <div>
-                        <div class="expense-amount">${sym}${exp.amount.toFixed(2)}</div>
+                        <div class="expense-amount ${isOwed ? 'owed' : 'owe'}">${sym}${exp.amount.toFixed(2)}</div>
                         <div class="expense-currency">${exp.currency}</div>
                     </div>
                 </div>
@@ -780,8 +1030,8 @@
             
             list.innerHTML = friends.map((f, i) => {
                 const bal = balances[f] || 0;
-                const balClass = bal > 0 ? 'owed' : (bal < 0 ? 'owe' : '');
-                const balText = bal > 0 ? `owes you $${bal.toFixed(2)}` : (bal < 0 ? `you owe $${Math.abs(bal).toFixed(2)}` : 'settled up');
+                const balClass = bal > 0 ? 'owed' : (bal < 0 ? 'owe' : 'settled');
+                const balText = bal > 0 ? `owes you ${formatMoney(bal, getDisplayCurrency())}` : (bal < 0 ? `you owe ${formatMoney(Math.abs(bal), getDisplayCurrency())}` : 'settled up');
                 return `
                     <div class="friend-card">
                         <div><div class="friend-name">${f}</div><div class="friend-balance ${balClass}">${balText}</div></div>
@@ -859,7 +1109,7 @@
                             <div class="group-count">${groupExpenses.length} expenses • ${g.includeReport ? 'In Reports' : 'Hidden from Reports'}</div>
                         </div>
                         <div style="text-align: right;">
-                            <div style="font-weight: bold; color: #007AFF;">$${total.toFixed(2)}</div>
+                            <div style="font-weight: bold; color: #007AFF;">${formatMoney(total, getDisplayCurrency())}</div>
                             <button class="btn btn-small btn-secondary" onclick="editGroup(${i})">Edit</button>
                             <button class="btn btn-small btn-danger" onclick="deleteGroup(${i})">Delete</button>
                         </div>
@@ -940,8 +1190,8 @@
         function calculateSplit() {
             const total = parseFloat(document.getElementById('splitTotal').value) || 0;
             const tipPercent = parseFloat(document.getElementById('splitTip').value) || 0;
+            const displayCurr = getDisplayCurrency();
             
-            // Count selected people
             let count = 0;
             if (document.getElementById('calcSplitYou')?.checked) count++;
             friends.forEach((f, i) => { if (document.getElementById('calcSplit' + i)?.checked) count++; });
@@ -951,10 +1201,10 @@
             const perPerson = count > 0 ? grandTotal / count : 0;
             
             document.getElementById('splitCount').textContent = count;
-            document.getElementById('splitSubtotal').textContent = '$' + total.toFixed(2);
-            document.getElementById('splitTipAmount').textContent = '$' + tipAmount.toFixed(2);
-            document.getElementById('splitGrandTotal').textContent = '$' + grandTotal.toFixed(2);
-            document.getElementById('splitPerPerson').textContent = '$' + perPerson.toFixed(2);
+            document.getElementById('splitSubtotal').textContent = formatMoney(total, displayCurr);
+            document.getElementById('splitTipAmount').textContent = formatMoney(tipAmount, displayCurr);
+            document.getElementById('splitGrandTotal').textContent = formatMoney(grandTotal, displayCurr);
+            document.getElementById('splitPerPerson').textContent = formatMoney(perPerson, displayCurr);
         }
         
         // ===== REPORTS & EXPORT =====
@@ -977,6 +1227,7 @@
         function updateMonthlyReport() {
             const month = document.getElementById('reportMonth').value;
             const div = document.getElementById('monthlyReport');
+            const displayCurr = getDisplayCurrency();
             if (!month) { div.innerHTML = '<div class="empty-state" style="padding:20px"><p>Select a month</p></div>'; return; }
             
             const filtered = expenses.filter(e => e.date.substring(0, 7) === month && e.includeReport !== false);
@@ -985,9 +1236,9 @@
             filtered.forEach(e => { byCategory[e.group || 'Personal'] = (byCategory[e.group || 'Personal'] || 0) + e.amount; });
             
             div.innerHTML = `
-                <div class="summary-row" style="font-weight:bold; font-size:18px;"><span>Total Spent</span><span style="color:#FF3B30">$${total.toFixed(2)}</span></div>
+                <div class="summary-row" style="font-weight:bold; font-size:18px;"><span>Total Spent</span><span style="color:#FF3B30">${formatMoney(total, displayCurr)}</span></div>
                 <div style="margin-top:15px;"><strong>By Group:</strong></div>
-                ${Object.entries(byCategory).map(([k, v]) => `<div class="summary-row"><span>${k}</span><span>$${v.toFixed(2)}</span></div>`).join('')}
+                ${Object.entries(byCategory).map(([k, v]) => `<div class="summary-row"><span>${k}</span><span>${formatMoney(v, displayCurr)}</span></div>`).join('')}
                 <div style="margin-top:15px; color:#8E8E93; font-size:13px;">${filtered.length} transactions</div>
             `;
         }
@@ -995,6 +1246,7 @@
         function updateYearlyReport() {
             const year = document.getElementById('reportYear').value;
             const div = document.getElementById('yearlyReport');
+            const displayCurr = getDisplayCurrency();
             if (!year) { div.innerHTML = '<div class="empty-state" style="padding:20px"><p>Select a year</p></div>'; return; }
             
             const filtered = expenses.filter(e => e.date.substring(0, 4) === year && e.includeReport !== false);
@@ -1003,11 +1255,11 @@
             filtered.forEach(e => { const m = e.date.substring(5, 7); monthly[m] = (monthly[m] || 0) + e.amount; });
             
             div.innerHTML = `
-                <div class="summary-row" style="font-weight:bold; font-size:18px;"><span>Year Total</span><span style="color:#FF3B30">$${total.toFixed(2)}</span></div>
+                <div class="summary-row" style="font-weight:bold; font-size:18px;"><span>Year Total</span><span style="color:#FF3B30">${formatMoney(total, displayCurr)}</span></div>
                 <div style="margin-top:15px;"><strong>Monthly Breakdown:</strong></div>
                 ${Object.entries(monthly).sort().map(([m, v]) => {
                     const date = new Date(year, m - 1);
-                    return `<div class="summary-row"><span>${date.toLocaleString('default', {month:'long'})}</span><span>$${v.toFixed(2)}</span></div>`;
+                    return `<div class="summary-row"><span>${date.toLocaleString('default', {month:'long'})}</span><span>${formatMoney(v, displayCurr)}</span></div>`;
                 }).join('')}
                 <div style="margin-top:15px; color:#8E8E93; font-size:13px;">${filtered.length} transactions</div>
             `;
