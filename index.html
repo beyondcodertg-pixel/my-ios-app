@@ -1,16 +1,1156 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My App</title>
-    <style>
-        body { font-family: Arial; padding: 20px; background: #f0f0f0; }
-        h1 { color: blue; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ExpensePro - Smart Money Tracker</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<style>
+:root{--primary:#007AFF;--primary-dark:#0051D5;--secondary:#34C759;--danger:#FF3B30;--warning:#FF9500;--purple:#AF52DE;--teal:#5AC8FA;--bg:#F2F2F7;--card:#FFFFFF;--text:#000;--text-secondary:#8E8E93;--border:#E5E5EA;--shadow:0 2px 12px rgba(0,0,0,0.08)}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+.iphone-frame{max-width:430px;margin:0 auto;background:var(--bg);min-height:100vh;position:relative;overflow:hidden}
+.status-bar{height:44px;background:var(--card);display:flex;justify-content:space-between;align-items:center;padding:0 20px;font-size:14px;font-weight:600;position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border)}
+.screen{display:none;animation:fadeIn .3s ease}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.header{background:var(--card);padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.header h1{font-size:28px;font-weight:700}
+.header .subtitle{font-size:13px;color:var(--text-secondary);margin-top:2px}
+.card{background:var(--card);border-radius:16px;margin:12px 16px;padding:16px;box-shadow:var(--shadow)}
+.balance-card{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:white;border-radius:20px;margin:16px;padding:24px;position:relative;overflow:hidden}
+.balance-card::before{content:'';position:absolute;top:-50%;right:-20%;width:200px;height:200px;background:rgba(255,255,255,0.1);border-radius:50%}
+.balance-label{font-size:14px;opacity:.9;margin-bottom:8px}
+.balance-amount{font-size:36px;font-weight:700;margin-bottom:16px}
+.balance-stats{display:flex;gap:24px}
+.stat-item{display:flex;align-items:center;gap:6px;font-size:14px}
+.quick-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:0 16px;margin:16px 0}
+.action-btn{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;cursor:pointer}
+.action-icon{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;color:white;box-shadow:0 4px 12px rgba(0,0,0,0.15)}
+.action-btn span{font-size:12px;color:var(--text-secondary);font-weight:500}
+.section-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 8px}
+.section-title{font-size:20px;font-weight:700}
+.see-all{color:var(--primary);font-size:14px;font-weight:600;background:none;border:none;cursor:pointer}
+.transaction-list{padding:0 16px}
+.transaction-item{background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 4px rgba(0,0,0,0.04);position:relative;overflow:hidden}
+.tx-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;color:white;flex-shrink:0}
+.tx-info{flex:1;min-width:0}
+.tx-title{font-size:15px;font-weight:600;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx-meta{font-size:12px;color:var(--text-secondary)}
+.tx-amount{font-size:16px;font-weight:700;text-align:right}
+.tx-amount.expense{color:var(--danger)}
+.tx-amount.income{color:var(--secondary)}
+.tx-converted{font-size:11px;color:var(--text-secondary);text-align:right;margin-top:2px}
+.tx-actions{position:absolute;right:0;top:0;bottom:0;display:flex;transform:translateX(100%);transition:transform .2s ease}
+.tx-actions.show{transform:translateX(0)}
+.tx-action-btn{width:60px;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;cursor:pointer;border:none}
+.tx-action-btn.edit{background:var(--primary)}
+.tx-action-btn.delete{background:var(--danger)}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:8px 0 24px;z-index:100}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;color:var(--text-secondary);font-size:10px;cursor:pointer;padding:4px 12px;position:relative}
+.nav-item.active{color:var(--primary)}
+.nav-item i{font-size:22px}
+.nav-item .badge{position:absolute;top:0;right:8px;background:var(--danger);color:white;font-size:10px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.fab{position:fixed;bottom:90px;right:20px;width:56px;height:56px;border-radius:50%;background:var(--primary);color:white;border:none;font-size:24px;box-shadow:0 4px 16px rgba(0,122,255,0.4);cursor:pointer;z-index:99;display:flex;align-items:center;justify-content:center}
+.form-group{margin-bottom:20px}
+.form-label{display:block;font-size:14px;font-weight:600;margin-bottom:8px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px}
+.form-input,.form-select{width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;font-size:16px;background:var(--card);outline:none;transition:border-color .2s}
+.form-input:focus,.form-select:focus{border-color:var(--primary)}
+.amount-input{font-size:32px;font-weight:700;text-align:center;border:none;background:transparent;width:100%;color:var(--text)}
+.category-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px}
+.category-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;border-radius:12px;background:var(--bg);border:2px solid transparent;cursor:pointer;transition:all .2s}
+.category-item.selected{border-color:var(--primary);background:rgba(0,122,255,0.08)}
+.category-item i{font-size:20px}
+.category-item span{font-size:11px;font-weight:500}
+.btn-primary{width:100%;padding:16px;background:var(--primary);color:white;border:none;border-radius:14px;font-size:17px;font-weight:600;cursor:pointer;margin-top:8px}
+.btn-secondary{width:100%;padding:16px;background:var(--bg);color:var(--primary);border:none;border-radius:14px;font-size:17px;font-weight:600;cursor:pointer;margin-top:8px}
+.btn-danger{width:100%;padding:16px;background:var(--danger);color:white;border:none;border-radius:14px;font-size:17px;font-weight:600;cursor:pointer;margin-top:8px}
+.split-card{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;border-radius:16px;padding:20px;margin:12px 16px}
+.split-balance{display:flex;justify-content:space-around;margin-top:16px}
+.split-item{text-align:center}
+.split-item .label{font-size:12px;opacity:.8;margin-bottom:4px}
+.split-item .value{font-size:20px;font-weight:700}
+.friend-item{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--card);border-radius:12px;margin:0 16px 8px;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.friend-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--purple));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px}
+.friend-info{flex:1}
+.friend-name{font-weight:600;font-size:15px}
+.friend-status{font-size:13px;color:var(--text-secondary);margin-top:2px}
+.friend-amount{font-weight:700;font-size:15px}
+.friend-amount.owe{color:var(--danger)}
+.friend-amount.owed{color:var(--secondary)}
+.chart-container{position:relative;height:220px;margin:16px 0}
+.report-card{background:var(--card);border-radius:16px;padding:20px;margin:12px 16px}
+.report-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+.report-row:last-child{border-bottom:none}
+.report-category{display:flex;align-items:center;gap:10px}
+.report-dot{width:10px;height:10px;border-radius:50%}
+.report-bar-bg{flex:1;height:6px;background:var(--bg);border-radius:3px;margin:0 12px;overflow:hidden}
+.report-bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
+.converter-box{background:var(--card);border-radius:20px;padding:24px;margin:16px;box-shadow:var(--shadow)}
+.currency-row{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.currency-flag{width:40px;height:40px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:20px}
+.currency-select{flex:1;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-size:16px;background:var(--card)}
+.swap-btn{width:44px;height:44px;border-radius:50%;background:var(--primary);color:white;border:none;font-size:18px;cursor:pointer;margin:8px auto;display:block}
+.convert-result{text-align:center;padding:20px;background:var(--bg);border-radius:16px;margin-top:16px}
+.convert-result .amount{font-size:32px;font-weight:700;color:var(--primary)}
+.convert-result .rate{font-size:13px;color:var(--text-secondary);margin-top:4px}
+.premium-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,#FFD700,#FFA500);color:#333;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.export-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:0 16px;margin:16px 0}
+.export-card{background:var(--card);border-radius:16px;padding:20px;text-align:center;box-shadow:var(--shadow);cursor:pointer;transition:transform .2s}
+.export-card:active{transform:scale(.96)}
+.export-card i{font-size:32px;color:var(--primary);margin-bottom:10px}
+.export-card h3{font-size:15px;margin-bottom:4px}
+.export-card p{font-size:12px;color:var(--text-secondary)}
+.toggle-switch{position:relative;width:50px;height:30px;background:var(--border);border-radius:15px;cursor:pointer;transition:background .3s}
+.toggle-switch.active{background:var(--secondary)}
+.toggle-switch::after{content:'';position:absolute;top:2px;left:2px;width:26px;height:26px;background:white;border-radius:50%;transition:transform .3s;box-shadow:0 2px 4px rgba(0,0,0,0.2)}
+.toggle-switch.active::after{transform:translateX(20px)}
+.settings-row{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;background:var(--card);border-bottom:1px solid var(--border)}
+.settings-row:first-child{border-radius:12px 12px 0 0}
+.settings-row:last-child{border-radius:0 0 12px 12px;border-bottom:none}
+.settings-icon{width:32px;color:var(--primary);font-size:18px}
+.settings-label{flex:1;margin-left:12px;font-size:16px}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal-content{background:var(--card);width:100%;max-width:430px;border-radius:24px 24px 0 0;padding:24px;max-height:90vh;overflow-y:auto;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-title{font-size:20px;font-weight:700}
+.modal-close{background:none;border:none;font-size:24px;color:var(--text-secondary);cursor:pointer}
+.date-range{display:flex;gap:8px;padding:0 16px;margin:12px 0;overflow-x:auto}
+.date-chip{padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap}
+.date-chip.active{background:var(--primary);color:white;border-color:var(--primary)}
+.search-bar{margin:12px 16px;position:relative}
+.search-bar input{width:100%;padding:12px 16px 12px 44px;border:1.5px solid var(--border);border-radius:12px;font-size:16px;background:var(--card);outline:none}
+.search-bar i{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--text-secondary)}
+.scroll-content{padding-bottom:100px}
+.currency-badge{display:inline-flex;align-items:center;gap:4px;background:var(--bg);padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;color:var(--primary)}
+.currency-picker-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--card);border-radius:12px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,0.04);cursor:pointer}
+.currency-picker-row:active{background:var(--bg)}
+.currency-picker-info{display:flex;align-items:center;gap:12px}
+.currency-picker-flag{width:36px;height:36px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:18px}
+.currency-picker-name{font-weight:600;font-size:15px}
+.currency-picker-code{font-size:13px;color:var(--text-secondary)}
+.currency-picker-check{color:var(--primary);font-size:18px}
+.default-currency-banner{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;border-radius:16px;padding:16px 20px;margin:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.default-currency-banner .label{font-size:12px;opacity:.8}
+.default-currency-banner .value{font-size:20px;font-weight:700}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-secondary)}
+.empty-state i{font-size:48px;margin-bottom:12px;opacity:.5}
+.empty-state h3{font-size:18px;margin-bottom:6px;color:var(--text)}
+.confirm-dialog{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:400;display:none;align-items:center;justify-content:center}
+.confirm-dialog.active{display:flex}
+.confirm-box{background:var(--card);width:80%;max-width:320px;border-radius:20px;padding:24px;text-align:center}
+.confirm-box h3{font-size:18px;margin-bottom:8px}
+.confirm-box p{color:var(--text-secondary);font-size:14px;margin-bottom:20px}
+.confirm-buttons{display:flex;gap:12px}
+.confirm-buttons button{flex:1;padding:12px;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;border:none}
+.confirm-cancel{background:var(--bg);color:var(--text)}
+.confirm-delete{background:var(--danger);color:white}
+@media(min-width:431px){body{background:#333}.iphone-frame{border-radius:40px;min-height:90vh;margin:20px auto;border:12px solid #1a1a1a}}
+::-webkit-scrollbar{display:none}
+</style>
+<base target="_blank">
 </head>
 <body>
-    <h1>Hello iPhone!</h1>
-    <p>This is my HTML running as an app.</p>
-    <button onclick="alert('It works!')">Tap Me</button>
+<div class="iphone-frame">
+<div class="status-bar">
+<span id="clock">9:41</span>
+<div style="display:flex;gap:6px;align-items:center">
+<i class="fas fa-signal"></i>
+<i class="fas fa-wifi"></i>
+<i class="fas fa-battery-full"></i>
+</div>
+</div>
+
+<!-- HOME SCREEN -->
+<div class="screen active" id="screen-home">
+<div class="header">
+<div>
+<div class="subtitle">Good Morning,</div>
+<h1>My Wallet</h1>
+</div>
+<div style="display:flex;align-items:center;gap:10px">
+<button style="background:none;border:none;font-size:14px;color:var(--primary);cursor:pointer;display:flex;align-items:center;gap:4px" onclick="showScreen('screen-currency')">
+<span class="currency-badge" id="homeCurrencyBadge"><span id="homeFlag">🇺🇸</span> <span id="homeCode">USD</span></span>
+</button>
+<button style="background:none;border:none;font-size:20px;color:var(--text);cursor:pointer" onclick="showScreen('screen-profile')">
+<i class="fas fa-user-circle"></i>
+</button>
+</div>
+</div>
+<div class="scroll-content">
+<div class="balance-card">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<div class="balance-label">Total Balance</div>
+<span class="currency-badge" style="background:rgba(255,255,255,0.2);color:white"><span id="balanceFlag">🇺🇸</span> <span id="balanceCode">USD</span></span>
+</div>
+<div class="balance-amount" id="totalBalance">$12,450.00</div>
+<div class="balance-stats">
+<div class="stat-item"><i class="fas fa-arrow-down" style="color:#34C759"></i><span id="incomeDisplay">$8,200 Income</span></div>
+<div class="stat-item"><i class="fas fa-arrow-up" style="color:#FF3B30"></i><span id="expenseDisplay">$3,750 Expenses</span></div>
+</div>
+</div>
+<div class="quick-actions">
+<button class="action-btn" onclick="showScreen('screen-add')"><div class="action-icon" style="background:var(--danger)"><i class="fas fa-minus"></i></div><span>Expense</span></button>
+<button class="action-btn" onclick="showScreen('screen-add')"><div class="action-icon" style="background:var(--secondary)"><i class="fas fa-plus"></i></div><span>Income</span></button>
+<button class="action-btn" onclick="showScreen('screen-split')"><div class="action-icon" style="background:var(--purple)"><i class="fas fa-users"></i></div><span>Split</span></button>
+<button class="action-btn" onclick="showScreen('screen-convert')"><div class="action-icon" style="background:var(--teal)"><i class="fas fa-exchange-alt"></i></div><span>Convert</span></button>
+</div>
+<div class="section-header">
+<div class="section-title">Split Balances <span class="premium-badge"><i class="fas fa-crown"></i> PRO</span></div>
+<button class="see-all" onclick="showScreen('screen-split')">See All</button>
+</div>
+<div class="split-card" onclick="showScreen('screen-split')">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600">You are owed</span><span style="font-size:24px;font-weight:700">$450.00</span></div>
+<div class="split-balance">
+<div class="split-item"><div class="label">You Owe</div><div class="value" style="color:#FF3B30">$120</div></div>
+<div class="split-item"><div class="label">You Are Owed</div><div class="value" style="color:#34C759">$570</div></div>
+</div>
+</div>
+<div class="section-header">
+<div class="section-title">Recent Transactions</div>
+<button class="see-all" onclick="showScreen('screen-transactions')">See All</button>
+</div>
+<div class="transaction-list" id="recentTransactions"></div>
+</div>
+</div>
+
+<!-- TRANSACTIONS SCREEN -->
+<div class="screen" id="screen-transactions">
+<div class="header">
+<div><div class="subtitle">All Transactions</div><h1>History</h1></div>
+<button style="background:none;border:none;font-size:20px;cursor:pointer" onclick="showExportModal()"><i class="fas fa-download" style="color:var(--primary)"></i></button>
+</div>
+<div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search transactions..." id="searchInput" onkeyup="filterTransactions()"></div>
+<div class="date-range">
+<button class="date-chip active" onclick="setDateRange(this,'all')">All</button>
+<button class="date-chip" onclick="setDateRange(this,'week')">This Week</button>
+<button class="date-chip" onclick="setDateRange(this,'month')">This Month</button>
+<button class="date-chip" onclick="setDateRange(this,'year')">This Year</button>
+</div>
+<div class="scroll-content" id="allTransactions"></div>
+</div>
+
+<!-- ADD/EDIT TRANSACTION SCREEN -->
+<div class="screen" id="screen-add">
+<div class="header">
+<button style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--primary)" onclick="cancelEdit()"><i class="fas fa-chevron-left"></i> Back</button>
+<h1 style="font-size:18px" id="addScreenTitle">Add Transaction</h1>
+<div style="width:60px"></div>
+</div>
+<div class="scroll-content" style="padding:20px">
+<div style="text-align:center;margin:20px 0">
+<div style="font-size:14px;color:var(--text-secondary);margin-bottom:8px">Amount</div>
+<div style="display:flex;align-items:center;justify-content:center;gap:4px">
+<span style="font-size:24px;color:var(--text-secondary)" id="addSymbol">$</span>
+<input type="number" class="amount-input" placeholder="0.00" id="txAmount" step="0.01">
+</div>
+<div style="margin-top:8px">
+<span class="currency-badge" id="addCurrencyBadge" onclick="showCurrencyPickerForAdd()" style="cursor:pointer">
+<span id="addFlag">🇺🇸</span> <span id="addCode">USD</span> <i class="fas fa-chevron-down" style="font-size:10px"></i>
+</span>
+</div>
+</div>
+<div class="form-group">
+<label class="form-label">Type</label>
+<div style="display:flex;gap:12px">
+<button class="btn-primary" style="flex:1;background:var(--danger)" id="btnExpense" onclick="setTxType('expense')">Expense</button>
+<button class="btn-secondary" style="flex:1" id="btnIncome" onclick="setTxType('income')">Income</button>
+</div>
+</div>
+<div class="form-group">
+<label class="form-label">Category</label>
+<div class="category-grid" id="categoryGrid"></div>
+</div>
+<div class="form-group">
+<label class="form-label">Description</label>
+<input type="text" class="form-input" placeholder="What was this for?" id="txDescription">
+</div>
+<div class="form-group">
+<label class="form-label">Date</label>
+<input type="date" class="form-input" id="txDate">
+</div>
+<div class="form-group" id="conversionPreview" style="display:none;background:var(--bg);padding:12px;border-radius:12px">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<span style="font-size:13px;color:var(--text-secondary)">Converted to <span id="previewTargetCode">USD</span></span>
+<span style="font-size:16px;font-weight:700;color:var(--primary)" id="previewConverted">$0.00</span>
+</div>
+<div style="font-size:11px;color:var(--text-secondary);margin-top:4px" id="previewRate">Rate: 1.0000</div>
+</div>
+<button class="btn-primary" onclick="saveTransaction()" id="saveTxBtn">Save Transaction</button>
+<button class="btn-danger" onclick="deleteCurrentTransaction()" id="deleteTxBtn" style="display:none">Delete Transaction</button>
+</div>
+</div>
+
+<!-- SPLITWISE SCREEN -->
+<div class="screen" id="screen-split">
+<div class="header">
+<div><div class="subtitle">Split Expenses</div><h1>Balances <span class="premium-badge"><i class="fas fa-crown"></i> PRO</span></h1></div>
+<button style="background:none;border:none;font-size:20px;color:var(--primary);cursor:pointer" onclick="showAddFriendModal()"><i class="fas fa-user-plus"></i></button>
+</div>
+<div class="scroll-content">
+<div class="split-card">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600">Total Balance</span><span style="font-size:28px;font-weight:700">+$330.00</span></div>
+<div class="split-balance">
+<div class="split-item"><div class="label">You Owe</div><div class="value" style="color:#FF3B30">$120</div></div>
+<div class="split-item"><div class="label">You Are Owed</div><div class="value" style="color:#34C759">$450</div></div>
+</div>
+</div>
+<div class="section-header"><div class="section-title">Friends</div></div>
+<div id="friendsList">
+<div class="friend-item"><div class="friend-avatar">JD</div><div class="friend-info"><div class="friend-name">John Doe</div><div class="friend-status">Dinner last night</div></div><div class="friend-amount owed">+$45.00</div></div>
+<div class="friend-item"><div class="friend-avatar" style="background:linear-gradient(135deg,#FF3B30,#FF9500)">SM</div><div class="friend-info"><div class="friend-name">Sarah Miller</div><div class="friend-status">Trip to NYC</div></div><div class="friend-amount owed">+$120.00</div></div>
+<div class="friend-item"><div class="friend-avatar" style="background:linear-gradient(135deg,#34C759,#30D158)">MK</div><div class="friend-info"><div class="friend-name">Mike Khan</div><div class="friend-status">Grocery split</div></div><div class="friend-amount owe">-$75.00</div></div>
+<div class="friend-item"><div class="friend-avatar" style="background:linear-gradient(135deg,#AF52DE,#BF5AF2)">EW</div><div class="friend-info"><div class="friend-name">Emma Wilson</div><div class="friend-status">Movie tickets</div></div><div class="friend-amount owe">-$45.00</div></div>
+<div class="friend-item"><div class="friend-avatar" style="background:linear-gradient(135deg,#5AC8FA,#0A84FF)">RJ</div><div class="friend-info"><div class="friend-name">Raj Patel</div><div class="friend-status">Rent share</div></div><div class="friend-amount owed">+$285.00</div></div>
+</div>
+<div class="section-header"><div class="section-title">Recent Splits</div></div>
+<div class="transaction-list">
+<div class="transaction-item"><div class="tx-icon" style="background:var(--purple)"><i class="fas fa-utensils"></i></div><div class="tx-info"><div class="tx-title">Dinner at Italian Place</div><div class="tx-meta">Split with John, Sarah - Jun 8</div></div><div class="tx-amount expense">-$35.00</div></div>
+<div class="transaction-item"><div class="tx-icon" style="background:var(--warning)"><i class="fas fa-plane"></i></div><div class="tx-info"><div class="tx-title">NYC Trip Flights</div><div class="tx-meta">Split with Sarah - Jun 5</div></div><div class="tx-amount expense">-$120.00</div></div>
+</div>
+<button class="btn-primary" style="margin:16px" onclick="showAddSplitModal()"><i class="fas fa-plus"></i> Add Split Expense</button>
+</div>
+</div>
+
+<!-- REPORTS SCREEN -->
+<div class="screen" id="screen-reports">
+<div class="header">
+<div><div class="subtitle">Analytics</div><h1>Reports</h1></div>
+<button style="background:none;border:none;font-size:20px;cursor:pointer" onclick="showExportModal()"><i class="fas fa-file-export" style="color:var(--primary)"></i></button>
+</div>
+<div class="scroll-content">
+<div class="date-range">
+<button class="date-chip active" onclick="setReportRange(this,'month')">Monthly</button>
+<button class="date-chip" onclick="setReportRange(this,'quarter')">Quarterly</button>
+<button class="date-chip" onclick="setReportRange(this,'year')">Yearly</button>
+</div>
+<div class="report-card">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><span style="font-weight:600">Spending Overview</span><span style="color:var(--text-secondary);font-size:13px">June 2026</span></div>
+<div class="chart-container"><canvas id="spendingChart"></canvas></div>
+</div>
+<div class="report-card">
+<div style="font-weight:600;margin-bottom:16px">Category Breakdown</div>
+<div id="categoryBreakdown">
+<div class="report-row"><div class="report-category"><div class="report-dot" style="background:#FF3B30"></div><span>Food & Dining</span></div><div class="report-bar-bg"><div class="report-bar-fill" style="width:35%;background:#FF3B30"></div></div><span style="font-weight:600">$1,245</span></div>
+<div class="report-row"><div class="report-category"><div class="report-dot" style="background:#007AFF"></div><span>Transportation</span></div><div class="report-bar-bg"><div class="report-bar-fill" style="width:25%;background:#007AFF"></div></div><span style="font-weight:600">$890</span></div>
+<div class="report-row"><div class="report-category"><div class="report-dot" style="background:#AF52DE"></div><span>Shopping</span></div><div class="report-bar-bg"><div class="report-bar-fill" style="width:20%;background:#AF52DE"></div></div><span style="font-weight:600">$720</span></div>
+<div class="report-row"><div class="report-category"><div class="report-dot" style="background:#34C759"></div><span>Bills & Utilities</span></div><div class="report-bar-bg"><div class="report-bar-fill" style="width:15%;background:#34C759"></div></div><span style="font-weight:600">$540</span></div>
+<div class="report-row"><div class="report-category"><div class="report-dot" style="background:#FF9500"></div><span>Entertainment</span></div><div class="report-bar-bg"><div class="report-bar-fill" style="width:5%;background:#FF9500"></div></div><span style="font-weight:600">$180</span></div>
+</div>
+</div>
+<div class="report-card">
+<div style="font-weight:600;margin-bottom:12px">Monthly Trend</div>
+<div class="chart-container" style="height:180px"><canvas id="trendChart"></canvas></div>
+</div>
+<div class="export-grid">
+<div class="export-card" onclick="exportExcel('monthly')"><i class="fas fa-file-excel" style="color:#217346"></i><h3>Monthly Excel</h3><p>Export June 2026</p></div>
+<div class="export-card" onclick="exportExcel('yearly')"><i class="fas fa-file-excel" style="color:#217346"></i><h3>Yearly Excel</h3><p>Export 2026</p></div>
+<div class="export-card" onclick="exportPDF('monthly')"><i class="fas fa-file-pdf" style="color:#F40F02"></i><h3>Monthly PDF</h3><p>Export June 2026</p></div>
+<div class="export-card" onclick="exportPDF('yearly')"><i class="fas fa-file-pdf" style="color:#F40F02"></i><h3>Yearly PDF</h3><p>Export 2026</p></div>
+</div>
+</div>
+</div>
+
+<!-- CURRENCY CONVERTER SCREEN -->
+<div class="screen" id="screen-convert">
+<div class="header"><div><div class="subtitle">Live Rates</div><h1>Converter</h1></div></div>
+<div class="scroll-content">
+<div class="converter-box">
+<div style="text-align:center;margin-bottom:20px">
+<div style="font-size:14px;color:var(--text-secondary);margin-bottom:8px">Amount</div>
+<div style="display:flex;align-items:center;justify-content:center;gap:4px">
+<span style="font-size:20px;color:var(--text-secondary)" id="fromSymbol">$</span>
+<input type="number" class="amount-input" placeholder="100" id="convertAmount" value="100" oninput="convertCurrency()">
+</div>
+</div>
+<div class="currency-row"><div class="currency-flag" id="fromFlag">🇺🇸</div><select class="currency-select" id="fromCurrency" onchange="convertCurrency()"><option value="USD" selected>USD - US Dollar</option><option value="EUR">EUR - Euro</option><option value="GBP">GBP - British Pound</option><option value="INR">INR - Indian Rupee</option><option value="JPY">JPY - Japanese Yen</option><option value="CAD">CAD - Canadian Dollar</option><option value="AUD">AUD - Australian Dollar</option><option value="CNY">CNY - Chinese Yuan</option><option value="CHF">CHF - Swiss Franc</option><option value="SGD">SGD - Singapore Dollar</option><option value="AED">AED - UAE Dirham</option><option value="SAR">SAR - Saudi Riyal</option></select></div>
+<button class="swap-btn" onclick="swapCurrency()"><i class="fas fa-exchange-alt"></i></button>
+<div class="currency-row"><div class="currency-flag" id="toFlag">🇮🇳</div><select class="currency-select" id="toCurrency" onchange="convertCurrency()"><option value="USD">USD - US Dollar</option><option value="EUR">EUR - Euro</option><option value="GBP">GBP - British Pound</option><option value="INR" selected>INR - Indian Rupee</option><option value="JPY">JPY - Japanese Yen</option><option value="CAD">CAD - Canadian Dollar</option><option value="AUD">AUD - Australian Dollar</option><option value="CNY">CNY - Chinese Yuan</option><option value="CHF">CHF - Swiss Franc</option><option value="SGD">SGD - Singapore Dollar</option><option value="AED">AED - UAE Dirham</option><option value="SAR">SAR - Saudi Riyal</option></select></div>
+<div class="convert-result"><div class="amount" id="convertResult">₹8,312.00</div><div class="rate" id="convertRate">1 USD = 83.12 INR</div><div style="font-size:11px;color:var(--text-secondary);margin-top:8px">Last updated: Just now</div></div>
+</div>
+<div class="section-header"><div class="section-title">Popular Rates</div></div>
+<div class="card" id="popularRates"></div>
+</div>
+</div>
+
+<!-- CURRENCY PICKER SCREEN -->
+<div class="screen" id="screen-currency">
+<div class="header">
+<button style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--primary)" onclick="showScreen('screen-home')"><i class="fas fa-chevron-left"></i> Back</button>
+<h1 style="font-size:18px">Default Currency</h1>
+<div style="width:60px"></div>
+</div>
+<div class="scroll-content">
+<div class="default-currency-banner">
+<div>
+<div class="label">Current Default</div>
+<div class="value" id="defaultCurrencyDisplay">🇺🇸 USD - US Dollar</div>
+</div>
+<i class="fas fa-check-circle" style="font-size:24px"></i>
+</div>
+<div class="section-header"><div class="section-title">All Currencies</div></div>
+<div id="currencyList"></div>
+</div>
+</div>
+
+<!-- PROFILE/SETTINGS SCREEN -->
+<div class="screen" id="screen-profile">
+<div class="header"><div><div class="subtitle">Account</div><h1>Settings</h1></div><button style="background:none;border:none;font-size:20px;cursor:pointer" onclick="showScreen('screen-home')"><i class="fas fa-times" style="color:var(--text)"></i></button></div>
+<div class="scroll-content">
+<div style="text-align:center;padding:24px">
+<div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--purple));margin:0 auto 12px;display:flex;align-items:center;justify-content:center;color:white;font-size:32px;font-weight:700">U</div>
+<h2 style="font-size:20px">User Name</h2>
+<p style="color:var(--text-secondary);font-size:14px">user@email.com</p>
+<div style="margin-top:8px"><span class="premium-badge"><i class="fas fa-crown"></i> Pro Member</span></div>
+</div>
+<div class="section-header"><div class="section-title">Preferences</div></div>
+<div class="card" style="padding:0;overflow:hidden">
+<div class="settings-row" onclick="showScreen('screen-currency')">
+<div class="settings-icon"><i class="fas fa-dollar-sign"></i></div>
+<span class="settings-label">Default Currency</span>
+<div style="display:flex;align-items:center;gap:8px">
+<span class="currency-badge" id="settingsCurrencyBadge"><span id="settingsFlag">🇺🇸</span> <span id="settingsCode">USD</span></span>
+<i class="fas fa-chevron-right" style="color:var(--text-secondary)"></i>
+</div>
+</div>
+<div class="settings-row"><div class="settings-icon"><i class="fas fa-moon"></i></div><span class="settings-label">Dark Mode</span><div class="toggle-switch" onclick="this.classList.toggle('active')"></div></div>
+<div class="settings-row"><div class="settings-icon"><i class="fas fa-bell"></i></div><span class="settings-label">Notifications</span><div class="toggle-switch active" onclick="this.classList.toggle('active')"></div></div>
+<div class="settings-row"><div class="settings-icon"><i class="fas fa-lock"></i></div><span class="settings-label">Face ID / Touch ID</span><div class="toggle-switch active" onclick="this.classList.toggle('active')"></div></div>
+<div class="settings-row"><div class="settings-icon"><i class="fas fa-cloud"></i></div><span class="settings-label">Cloud Sync</span><div class="toggle-switch active" onclick="this.classList.toggle('active')"></div></div>
+</div>
+<div class="section-header"><div class="section-title">Data & Export</div></div>
+<div class="card" style="padding:0;overflow:hidden">
+<div class="settings-row" onclick="showExportModal()"><div class="settings-icon"><i class="fas fa-file-excel"></i></div><span class="settings-label">Export to Excel</span><i class="fas fa-chevron-right" style="color:var(--text-secondary)"></i></div>
+<div class="settings-row" onclick="exportPDF('all')"><div class="settings-icon"><i class="fas fa-file-pdf"></i></div><span class="settings-label">Export to PDF</span><i class="fas fa-chevron-right" style="color:var(--text-secondary)"></i></div>
+<div class="settings-row"><div class="settings-icon"><i class="fas fa-database"></i></div><span class="settings-label">Backup Data</span><i class="fas fa-chevron-right" style="color:var(--text-secondary)"></i></div>
+<div class="settings-row"><div class="settings-icon"><i class="fas fa-trash-alt" style="color:var(--danger)"></i></div><span class="settings-label" style="color:var(--danger)">Clear All Data</span><i class="fas fa-chevron-right" style="color:var(--text-secondary)"></i></div>
+</div>
+<div class="section-header"><div class="section-title">About</div></div>
+<div class="card" style="padding:0;overflow:hidden">
+<div class="settings-row"><span class="settings-label">Version</span><span style="color:var(--text-secondary)">2.1.0</span></div>
+<div class="settings-row"><span class="settings-label">Terms of Service</span><i class="fas fa-chevron-right" style="color:var(--text-secondary)"></i></div>
+<div class="settings-row"><span class="settings-label">Privacy Policy</span><i class="fas fa-chevron-right" style="color:var(--text-secondary)"></i></div>
+</div>
+<button class="btn-primary" style="margin:16px;background:var(--danger)">Sign Out</button>
+</div>
+</div>
+
+<!-- Bottom Navigation -->
+<div class="bottom-nav">
+<button class="nav-item active" onclick="showScreen('screen-home')" data-screen="screen-home"><i class="fas fa-home"></i><span>Home</span></button>
+<button class="nav-item" onclick="showScreen('screen-transactions')" data-screen="screen-transactions"><i class="fas fa-list-alt"></i><span>History</span></button>
+<button class="nav-item" onclick="showScreen('screen-split')" data-screen="screen-split"><i class="fas fa-users"></i><span>Split</span><div class="badge">3</div></button>
+<button class="nav-item" onclick="showScreen('screen-reports')" data-screen="screen-reports"><i class="fas fa-chart-pie"></i><span>Reports</span></button>
+<button class="nav-item" onclick="showScreen('screen-convert')" data-screen="screen-convert"><i class="fas fa-coins"></i><span>Convert</span></button>
+</div>
+
+<button class="fab" onclick="showScreen('screen-add')"><i class="fas fa-plus"></i></button>
+
+<!-- Export Modal -->
+<div class="modal-overlay" id="exportModal">
+<div class="modal-content">
+<div class="modal-header"><h2 class="modal-title">Export Data</h2><button class="modal-close" onclick="closeExportModal()">&times;</button></div>
+<p style="color:var(--text-secondary);margin-bottom:20px">Download your financial records in your preferred format.</p>
+<div class="form-group">
+<label class="form-label">Date Range</label>
+<select class="form-select" id="exportRange"><option value="month">This Month (June 2026)</option><option value="quarter">This Quarter (Q2 2026)</option><option value="year">This Year (2026)</option><option value="all">All Time</option><option value="custom">Custom Range</option></select>
+</div>
+<div class="form-group">
+<label class="form-label">Currency for Export</label>
+<select class="form-select" id="exportCurrency"><option value="default">Use Default (USD)</option><option value="original">Original Transaction Currencies</option><option value="USD">USD - US Dollar</option><option value="EUR">EUR - Euro</option><option value="INR">INR - Indian Rupee</option><option value="GBP">GBP - British Pound</option></select>
+</div>
+<div class="form-group">
+<label class="form-label">Format</label>
+<div style="display:flex;gap:12px"><button class="btn-primary" style="flex:1;background:#217346" onclick="downloadExport('excel')"><i class="fas fa-file-excel"></i> Excel</button><button class="btn-primary" style="flex:1;background:#F40F02" onclick="downloadExport('pdf')"><i class="fas fa-file-pdf"></i> PDF</button></div>
+</div>
+<div class="form-group">
+<label class="form-label">Include</label>
+<div style="display:flex;flex-direction:column;gap:12px">
+<label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" checked style="width:20px;height:20px;accent-color:var(--primary)"><span>Transactions</span></label>
+<label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" checked style="width:20px;height:20px;accent-color:var(--primary)"><span>Split Expenses</span></label>
+<label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" checked style="width:20px;height:20px;accent-color:var(--primary)"><span>Category Summary</span></label>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Add Split Modal -->
+<div class="modal-overlay" id="splitModal">
+<div class="modal-content">
+<div class="modal-header"><h2 class="modal-title">Add Split Expense</h2><button class="modal-close" onclick="closeSplitModal()">&times;</button></div>
+<div style="text-align:center;margin:16px 0"><div style="font-size:14px;color:var(--text-secondary);margin-bottom:8px">Total Amount</div><div style="display:flex;align-items:center;justify-content:center;gap:4px"><span style="font-size:24px;color:var(--text-secondary)">$</span><input type="number" class="amount-input" placeholder="0.00" id="splitAmount" step="0.01"></div></div>
+<div class="form-group"><label class="form-label">Description</label><input type="text" class="form-input" placeholder="e.g., Dinner, Trip, Rent" id="splitDesc"></div>
+<div class="form-group"><label class="form-label">Paid By</label><select class="form-select" id="paidBy"><option>You</option><option>John Doe</option><option>Sarah Miller</option><option>Mike Khan</option></select></div>
+<div class="form-group"><label class="form-label">Currency</label><select class="form-select" id="splitCurrency"><option value="USD">USD - US Dollar</option><option value="EUR">EUR - Euro</option><option value="INR">INR - Indian Rupee</option><option value="GBP">GBP - British Pound</option><option value="JPY">JPY - Japanese Yen</option><option value="AED">AED - UAE Dirham</option></select></div>
+<div class="form-group"><label class="form-label">Split With</label><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"><label style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg);border-radius:20px;cursor:pointer"><input type="checkbox" checked> John Doe</label><label style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg);border-radius:20px;cursor:pointer"><input type="checkbox"> Sarah Miller</label><label style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg);border-radius:20px;cursor:pointer"><input type="checkbox"> Mike Khan</label><label style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg);border-radius:20px;cursor:pointer"><input type="checkbox"> Emma Wilson</label></div></div>
+<div class="form-group"><label class="form-label">Split Type</label><select class="form-select"><option>Equal Split</option><option>Percentage</option><option>Exact Amounts</option><option>Shares</option></select></div>
+<button class="btn-primary" onclick="saveSplit()">Create Split</button>
+</div>
+</div>
+
+<!-- Delete Confirm Dialog -->
+<div class="confirm-dialog" id="deleteConfirmDialog">
+<div class="confirm-box">
+<i class="fas fa-trash-alt" style="font-size:40px;color:var(--danger);margin-bottom:12px"></i>
+<h3>Delete Transaction?</h3>
+<p>This action cannot be undone. The transaction will be permanently removed from your records.</p>
+<div class="confirm-buttons">
+<button class="confirm-cancel" onclick="closeDeleteConfirm()">Cancel</button>
+<button class="confirm-delete" onclick="confirmDeleteTransaction()">Delete</button>
+</div>
+</div>
+</div>
+
+<!-- Toast -->
+<div id="toast" style="position:fixed;top:60px;left:50%;transform:translateX(-50%) translateY(-100px);background:#333;color:white;padding:12px 24px;border-radius:12px;font-size:14px;font-weight:500;z-index:300;transition:transform .3s;max-width:90%;text-align:center"></div>
+</div>
+
+<script>
+// ===== CURRENCY DATA =====
+const currencyData = {
+    USD: { rate: 1, symbol: '$', flag: '🇺🇸', name: 'US Dollar' },
+    EUR: { rate: 0.925, symbol: '€', flag: '🇪🇺', name: 'Euro' },
+    GBP: { rate: 0.785, symbol: '£', flag: '🇬🇧', name: 'British Pound' },
+    INR: { rate: 83.12, symbol: '₹', flag: '🇮🇳', name: 'Indian Rupee' },
+    JPY: { rate: 156.45, symbol: '¥', flag: '🇯🇵', name: 'Japanese Yen' },
+    CAD: { rate: 1.365, symbol: 'C$', flag: '🇨🇦', name: 'Canadian Dollar' },
+    AUD: { rate: 1.525, symbol: 'A$', flag: '🇦🇺', name: 'Australian Dollar' },
+    CNY: { rate: 7.245, symbol: '¥', flag: '🇨🇳', name: 'Chinese Yuan' },
+    CHF: { rate: 0.905, symbol: 'Fr', flag: '🇨🇭', name: 'Swiss Franc' },
+    SGD: { rate: 1.355, symbol: 'S$', flag: '🇸🇬', name: 'Singapore Dollar' },
+    AED: { rate: 3.675, symbol: 'د.إ', flag: '🇦🇪', name: 'UAE Dirham' },
+    SAR: { rate: 3.750, symbol: '﷼', flag: '🇸🇦', name: 'Saudi Riyal' }
+};
+
+// ===== APP STATE =====
+let defaultCurrency = 'USD';
+let addTxCurrency = 'USD';
+let editingTransactionId = null;
+let transactionToDelete = null;
+
+// ===== SAMPLE TRANSACTIONS =====
+let transactions = [
+    { id: 1, title: 'Grocery Shopping', category: 'Food', amount: -85.50, currency: 'USD', date: '2026-06-08', icon: 'fa-shopping-basket', color: '#FF3B30', type: 'expense' },
+    { id: 2, title: 'Salary Deposit', category: 'Income', amount: 4500.00, currency: 'USD', date: '2026-06-01', icon: 'fa-briefcase', color: '#34C759', type: 'income' },
+    { id: 3, title: 'Dinner in Mumbai', category: 'Food', amount: -2500.00, currency: 'INR', date: '2026-06-07', icon: 'fa-utensils', color: '#FF3B30', type: 'expense' },
+    { id: 4, title: 'Uber Ride', category: 'Transport', amount: -24.50, currency: 'USD', date: '2026-06-07', icon: 'fa-car', color: '#007AFF', type: 'expense' },
+    { id: 5, title: 'Hotel in Dubai', category: 'Bills', amount: -450.00, currency: 'AED', date: '2026-06-05', icon: 'fa-hotel', color: '#FF9500', type: 'expense' },
+    { id: 6, title: 'Freelance Payment', category: 'Income', amount: 850.00, currency: 'EUR', date: '2026-06-04', icon: 'fa-laptop-code', color: '#34C759', type: 'income' },
+    { id: 7, title: 'Coffee Shop', category: 'Food', amount: -6.75, currency: 'USD', date: '2026-06-06', icon: 'fa-coffee', color: '#FF3B30', type: 'expense' },
+    { id: 8, title: 'Tokyo Shopping', category: 'Shopping', amount: -15000.00, currency: 'JPY', date: '2026-06-03', icon: 'fa-shopping-bag', color: '#AF52DE', type: 'expense' }
+];
+
+let currentTxType = 'expense';
+let selectedCategory = null;
+
+const categories = {
+    expense: [
+        { name: 'Food', icon: 'fa-utensils', color: '#FF3B30' },
+        { name: 'Transport', icon: 'fa-car', color: '#007AFF' },
+        { name: 'Shopping', icon: 'fa-shopping-bag', color: '#AF52DE' },
+        { name: 'Bills', icon: 'fa-file-invoice-dollar', color: '#FF9500' },
+        { name: 'Entertainment', icon: 'fa-film', color: '#5856D6' },
+        { name: 'Health', icon: 'fa-heartbeat', color: '#FF2D55' },
+        { name: 'Travel', icon: 'fa-plane', color: '#5AC8FA' },
+        { name: 'Other', icon: 'fa-ellipsis-h', color: '#8E8E93' }
+    ],
+    income: [
+        { name: 'Salary', icon: 'fa-briefcase', color: '#34C759' },
+        { name: 'Freelance', icon: 'fa-laptop-code', color: '#34C759' },
+        { name: 'Investments', icon: 'fa-chart-line', color: '#34C759' },
+        { name: 'Gifts', icon: 'fa-gift', color: '#34C759' },
+        { name: 'Refund', icon: 'fa-undo', color: '#34C759' },
+        { name: 'Other', icon: 'fa-ellipsis-h', color: '#8E8E93' }
+    ]
+};
+
+// ===== INITIALIZATION =====
+document.addEventListener('DOMContentLoaded', function() {
+    updateClock();
+    setInterval(updateClock, 60000);
+    renderTransactions();
+    renderCategories();
+    document.getElementById('txDate').valueAsDate = new Date();
+    initCharts();
+    renderPopularRates();
+    renderCurrencyList();
+    updateAllCurrencyDisplays();
+    setupAddCurrencyListener();
+    convertCurrency();
+});
+
+function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+}
+
+// ===== CURRENCY UTILITIES =====
+function convertAmount(amount, fromCurrency, toCurrency) {
+    if (fromCurrency === toCurrency) return amount;
+    const fromRate = currencyData[fromCurrency].rate;
+    const toRate = currencyData[toCurrency].rate;
+    return (amount / fromRate) * toRate;
+}
+
+// ===== SCREEN NAVIGATION =====
+function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById(screenId).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+    const navItem = document.querySelector('.nav-item[data-screen="' + screenId + '"]');
+    if (navItem) navItem.classList.add('active');
+    const fab = document.querySelector('.fab');
+    if (fab) fab.style.display = screenId === 'screen-add' ? 'none' : 'flex';
+    if (screenId === 'screen-reports') setTimeout(initCharts, 100);
+    if (screenId === 'screen-currency') renderCurrencyList();
+}
+
+// ===== UPDATE CURRENCY DISPLAYS =====
+function updateAllCurrencyDisplays() {
+    const def = currencyData[defaultCurrency];
+    document.getElementById('homeFlag').textContent = def.flag;
+    document.getElementById('homeCode').textContent = defaultCurrency;
+    document.getElementById('balanceFlag').textContent = def.flag;
+    document.getElementById('balanceCode').textContent = defaultCurrency;
+    document.getElementById('settingsFlag').textContent = def.flag;
+    document.getElementById('settingsCode').textContent = defaultCurrency;
+    document.getElementById('defaultCurrencyDisplay').textContent = def.flag + ' ' + defaultCurrency + ' - ' + def.name;
+    updateBalance();
+}
+
+// ===== RENDER TRANSACTIONS =====
+function renderTransactions() {
+    const recentList = document.getElementById('recentTransactions');
+    const allList = document.getElementById('allTransactions');
+    if (!recentList || !allList) return;
+    const recent = transactions.slice(0, 5);
+    recentList.innerHTML = recent.map(function(tx) { return createTxHTML(tx); }).join('');
+    allList.innerHTML = transactions.map(function(tx) { return createTxHTML(tx); }).join('');
+    attachSwipeListeners();
+}
+
+function createTxHTML(tx) {
+    const amountClass = tx.amount < 0 ? 'expense' : 'income';
+    const sign = tx.amount < 0 ? '' : '+';
+    const formattedDate = new Date(tx.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const originalSymbol = currencyData[tx.currency].symbol;
+    const originalAmount = Math.abs(tx.amount);
+    const convertedAmount = Math.abs(convertAmount(tx.amount, tx.currency, defaultCurrency));
+    const convertedSymbol = currencyData[defaultCurrency].symbol;
+
+    let conversionHTML = '';
+    if (tx.currency !== defaultCurrency) {
+        conversionHTML = '<div class="tx-converted">' + convertedSymbol + convertedAmount.toFixed(2) + ' ' + defaultCurrency + '</div>';
+    }
+
+    return '<div class="transaction-item" data-id="' + tx.id + '" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)" onmousedown="handleMouseDown(event)" onmouseup="handleMouseUp(event)">' +
+        '<div class="tx-icon" style="background:' + tx.color + '"><i class="fas ' + tx.icon + '"></i></div>' +
+        '<div class="tx-info">' +
+            '<div class="tx-title">' + tx.title + '</div>' +
+            '<div class="tx-meta">' + tx.category + ' - ' + formattedDate + ' <span class="currency-badge" style="margin-left:4px">' + currencyData[tx.currency].flag + ' ' + tx.currency + '</span></div>' +
+        '</div>' +
+        '<div>' +
+            '<div class="tx-amount ' + amountClass + '">' + sign + originalSymbol + originalAmount.toFixed(2) + '</div>' +
+            conversionHTML +
+        '</div>' +
+        '<div class="tx-actions" id="actions-' + tx.id + '">' +
+            '<button class="tx-action-btn edit" onclick="editTransaction(' + tx.id + ')"><i class="fas fa-pen"></i></button>' +
+            '<button class="tx-action-btn delete" onclick="promptDeleteTransaction(' + tx.id + ')"><i class="fas fa-trash"></i></button>' +
+        '</div>' +
+    '</div>';
+}
+
+// ===== SWIPE / LONG PRESS HANDLERS =====
+let touchStartX = 0;
+let touchStartTime = 0;
+let longPressTimer = null;
+let currentSwipeItem = null;
+
+function handleTouchStart(e) {
+    touchStartX = e.touches[0].clientX;
+    touchStartTime = Date.now();
+    const item = e.currentTarget;
+    longPressTimer = setTimeout(function() {
+        showTxActions(item);
+    }, 500);
+}
+
+function handleTouchEnd(e) {
+    if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+    }
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX - touchEndX;
+    const item = e.currentTarget;
+
+    if (Math.abs(diff) > 50) {
+        if (diff > 0) {
+            showTxActions(item);
+        } else {
+            hideTxActions(item);
+        }
+    } else if (Date.now() - touchStartTime < 500) {
+        hideAllTxActions();
+    }
+}
+
+function handleMouseDown(e) {
+    touchStartTime = Date.now();
+    const item = e.currentTarget;
+    longPressTimer = setTimeout(function() {
+        showTxActions(item);
+    }, 500);
+}
+
+function handleMouseUp(e) {
+    if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+    }
+}
+
+function showTxActions(item) {
+    hideAllTxActions();
+    const actions = item.querySelector('.tx-actions');
+    if (actions) actions.classList.add('show');
+    currentSwipeItem = item;
+}
+
+function hideTxActions(item) {
+    const actions = item.querySelector('.tx-actions');
+    if (actions) actions.classList.remove('show');
+}
+
+function hideAllTxActions() {
+    document.querySelectorAll('.tx-actions').forEach(function(a) { a.classList.remove('show'); });
+}
+
+function attachSwipeListeners() {
+    document.querySelectorAll('.transaction-item').forEach(function(item) {
+        item.addEventListener('touchstart', handleTouchStart, {passive: true});
+        item.addEventListener('touchend', handleTouchEnd, {passive: true});
+        item.addEventListener('mousedown', handleMouseDown);
+        item.addEventListener('mouseup', handleMouseUp);
+    });
+}
+
+// ===== EDIT TRANSACTION =====
+function editTransaction(id) {
+    const tx = transactions.find(function(t) { return t.id === id; });
+    if (!tx) return;
+
+    editingTransactionId = id;
+    addTxCurrency = tx.currency;
+    currentTxType = tx.type;
+    selectedCategory = null;
+
+    // Find category index
+    const catList = categories[tx.type];
+    for (let i = 0; i < catList.length; i++) {
+        if (catList[i].name === tx.category) {
+            selectedCategory = i;
+            break;
+        }
+    }
+
+    // Populate form
+    document.getElementById('txAmount').value = Math.abs(tx.amount);
+    document.getElementById('txDescription').value = tx.title;
+    document.getElementById('txDate').value = tx.date;
+
+    const data = currencyData[tx.currency];
+    document.getElementById('addFlag').textContent = data.flag;
+    document.getElementById('addCode').textContent = tx.currency;
+    document.getElementById('addSymbol').textContent = data.symbol;
+
+    document.getElementById('addScreenTitle').textContent = 'Edit Transaction';
+    document.getElementById('saveTxBtn').textContent = 'Update Transaction';
+    document.getElementById('deleteTxBtn').style.display = 'block';
+
+    setTxType(tx.type);
+    if (selectedCategory !== null) {
+        setTimeout(function() {
+            const catEl = document.querySelector('.category-item[data-idx="' + selectedCategory + '"]');
+            if (catEl) catEl.classList.add('selected');
+        }, 50);
+    }
+
+    updateConversionPreview();
+    showScreen('screen-add');
+    hideAllTxActions();
+}
+
+function cancelEdit() {
+    editingTransactionId = null;
+    addTxCurrency = defaultCurrency;
+    selectedCategory = null;
+    document.getElementById('txAmount').value = '';
+    document.getElementById('txDescription').value = '';
+    document.getElementById('addScreenTitle').textContent = 'Add Transaction';
+    document.getElementById('saveTxBtn').textContent = 'Save Transaction';
+    document.getElementById('deleteTxBtn').style.display = 'none';
+    document.getElementById('conversionPreview').style.display = 'none';
+
+    const data = currencyData[defaultCurrency];
+    document.getElementById('addFlag').textContent = data.flag;
+    document.getElementById('addCode').textContent = defaultCurrency;
+    document.getElementById('addSymbol').textContent = data.symbol;
+
+    showScreen('screen-home');
+}
+
+// ===== SAVE TRANSACTION (Add or Update) =====
+function saveTransaction() {
+    const amount = parseFloat(document.getElementById('txAmount').value);
+    const desc = document.getElementById('txDescription').value;
+    const date = document.getElementById('txDate').value;
+    if (!amount || !desc || selectedCategory === null) {
+        showToast('Please fill all fields');
+        return;
+    }
+
+    const cat = categories[currentTxType][selectedCategory];
+
+    if (editingTransactionId) {
+        // Update existing
+        const idx = transactions.findIndex(function(t) { return t.id === editingTransactionId; });
+        if (idx !== -1) {
+            transactions[idx] = {
+                id: editingTransactionId,
+                title: desc,
+                category: cat.name,
+                amount: currentTxType === 'expense' ? -amount : amount,
+                currency: addTxCurrency,
+                date: date,
+                icon: cat.icon,
+                color: cat.color,
+                type: currentTxType
+            };
+            showToast('Transaction updated!');
+        }
+    } else {
+        // Add new
+        const tx = {
+            id: Date.now(),
+            title: desc,
+            category: cat.name,
+            amount: currentTxType === 'expense' ? -amount : amount,
+            currency: addTxCurrency,
+            date: date,
+            icon: cat.icon,
+            color: cat.color,
+            type: currentTxType
+        };
+        transactions.unshift(tx);
+        showToast('Transaction saved in ' + addTxCurrency + '!');
+    }
+
+    renderTransactions();
+    updateBalance();
+    cancelEdit();
+}
+
+// ===== DELETE TRANSACTION =====
+function promptDeleteTransaction(id) {
+    transactionToDelete = id;
+    const dialog = document.getElementById('deleteConfirmDialog');
+    if (dialog) dialog.classList.add('active');
+    hideAllTxActions();
+}
+
+function closeDeleteConfirm() {
+    transactionToDelete = null;
+    const dialog = document.getElementById('deleteConfirmDialog');
+    if (dialog) dialog.classList.remove('active');
+}
+
+function confirmDeleteTransaction() {
+    if (transactionToDelete) {
+        transactions = transactions.filter(function(t) { return t.id !== transactionToDelete; });
+        renderTransactions();
+        updateBalance();
+        showToast('Transaction deleted');
+    }
+    closeDeleteConfirm();
+}
+
+function deleteCurrentTransaction() {
+    if (editingTransactionId) {
+        promptDeleteTransaction(editingTransactionId);
+    }
+}
+
+// ===== RENDER CATEGORIES =====
+function renderCategories() {
+    const grid = document.getElementById('categoryGrid');
+    if (!grid) return;
+    const cats = categories[currentTxType];
+    grid.innerHTML = cats.map(function(cat, idx) {
+        return '<div class="category-item" onclick="selectCategory(' + idx + ')" data-idx="' + idx + '"><i class="fas ' + cat.icon + '" style="color:' + cat.color + '"></i><span>' + cat.name + '</span></div>';
+    }).join('');
+}
+
+function setTxType(type) {
+    currentTxType = type;
+    const btnExpense = document.getElementById('btnExpense');
+    const btnIncome = document.getElementById('btnIncome');
+    if (type === 'expense') {
+        btnExpense.className = 'btn-primary';
+        btnExpense.style.background = 'var(--danger)';
+        btnIncome.className = 'btn-secondary';
+        btnIncome.style.background = '';
+    } else {
+        btnExpense.className = 'btn-secondary';
+        btnExpense.style.background = '';
+        btnIncome.className = 'btn-primary';
+        btnIncome.style.background = 'var(--secondary)';
+    }
+    if (!editingTransactionId) {
+        selectedCategory = null;
+    }
+    renderCategories();
+}
+
+function selectCategory(idx) {
+    selectedCategory = idx;
+    document.querySelectorAll('.category-item').forEach(function(el) { el.classList.remove('selected'); });
+    const selected = document.querySelector('.category-item[data-idx="' + idx + '"]');
+    if (selected) selected.classList.add('selected');
+}
+
+// ===== UPDATE BALANCE =====
+function updateBalance() {
+    let total = 0, income = 0, expense = 0;
+    transactions.forEach(function(tx) {
+        const converted = convertAmount(tx.amount, tx.currency, defaultCurrency);
+        total += converted;
+        if (tx.amount > 0) income += converted;
+        else expense += Math.abs(converted);
+    });
+    const defSym = currencyData[defaultCurrency].symbol;
+    document.getElementById('totalBalance').textContent = defSym + total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('incomeDisplay').textContent = defSym + income.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' Income';
+    document.getElementById('expenseDisplay').textContent = defSym + expense.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' Expenses';
+}
+
+// ===== FILTER TRANSACTIONS =====
+function filterTransactions() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    const filtered = transactions.filter(function(tx) {
+        return tx.title.toLowerCase().includes(query) || tx.category.toLowerCase().includes(query);
+    });
+    document.getElementById('allTransactions').innerHTML = filtered.map(function(tx) { return createTxHTML(tx); }).join('');
+    attachSwipeListeners();
+}
+
+function setDateRange(btn, range) {
+    document.querySelectorAll('.date-chip').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    showToast('Filtered: ' + range);
+}
+
+// ===== CHARTS =====
+function initCharts() {
+    const spendingCtx = document.getElementById('spendingChart');
+    if (spendingCtx) {
+        new Chart(spendingCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Food', 'Transport', 'Shopping', 'Bills', 'Entertainment'],
+                datasets: [{
+                    data: [35, 25, 20, 15, 5],
+                    backgroundColor: ['#FF3B30', '#007AFF', '#AF52DE', '#34C759', '#FF9500'],
+                    borderWidth: 0
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 12 } } } }, cutout: '65%' }
+        });
+    }
+    const trendCtx = document.getElementById('trendChart');
+    if (trendCtx) {
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Expenses',
+                    data: [3200, 2800, 3500, 3100, 2900, 3750],
+                    borderColor: '#FF3B30',
+                    backgroundColor: 'rgba(255,59,48,0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4
+                }, {
+                    label: 'Income',
+                    data: [5000, 5200, 4800, 5500, 5100, 8200],
+                    borderColor: '#34C759',
+                    backgroundColor: 'rgba(52,199,89,0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } }
+        });
+    }
+}
+
+function setReportRange(btn, range) {
+    document.querySelectorAll('#screen-reports .date-chip').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    showToast('Report updated: ' + range);
+}
+
+// ===== CURRENCY CONVERTER =====
+function convertCurrency() {
+    const amount = parseFloat(document.getElementById('convertAmount').value) || 0;
+    const from = document.getElementById('fromCurrency').value;
+    const to = document.getElementById('toCurrency').value;
+    const fromData = currencyData[from];
+    const toData = currencyData[to];
+    const rate = toData.rate / fromData.rate;
+    const result = amount * rate;
+    document.getElementById('convertResult').textContent = toData.symbol + result.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('convertRate').textContent = '1 ' + from + ' = ' + rate.toFixed(4) + ' ' + to;
+    document.getElementById('fromSymbol').textContent = fromData.symbol;
+    document.getElementById('fromFlag').textContent = fromData.flag;
+    document.getElementById('toFlag').textContent = toData.flag;
+}
+
+function swapCurrency() {
+    const from = document.getElementById('fromCurrency');
+    const to = document.getElementById('toCurrency');
+    const temp = from.value;
+    from.value = to.value;
+    to.value = temp;
+    convertCurrency();
+}
+
+function renderPopularRates() {
+    const container = document.getElementById('popularRates');
+    if (!container) return;
+    const popular = ['EUR', 'GBP', 'INR', 'JPY', 'CAD'];
+    container.innerHTML = popular.map(function(curr) {
+        const data = currencyData[curr];
+        return '<div class="report-row"><div class="report-category"><div class="report-dot" style="background:var(--primary)"></div><span>1 USD = ' + data.rate + ' ' + curr + '</span></div><span style="font-weight:600">' + data.symbol + '1.00</span></div>';
+    }).join('');
+}
+
+// ===== CURRENCY PICKER =====
+function renderCurrencyList() {
+    const list = document.getElementById('currencyList');
+    if (!list) return;
+    let html = '';
+    for (const code in currencyData) {
+        const data = currencyData[code];
+        const isSelected = code === defaultCurrency;
+        html += '<div class="currency-picker-row" onclick="selectDefaultCurrency(\'' + code + '\')">' +
+            '<div class="currency-picker-info">' +
+                '<div class="currency-picker-flag">' + data.flag + '</div>' +
+                '<div>' +
+                    '<div class="currency-picker-name">' + data.name + '</div>' +
+                    '<div class="currency-picker-code">' + code + ' - ' + data.symbol + '</div>' +
+                '</div>' +
+            '</div>' +
+            (isSelected ? '<div class="currency-picker-check"><i class="fas fa-check-circle"></i></div>' : '') +
+        '</div>';
+    }
+    list.innerHTML = html;
+}
+
+function selectDefaultCurrency(code) {
+    defaultCurrency = code;
+    updateAllCurrencyDisplays();
+    renderTransactions();
+    showToast('Default currency changed to ' + code);
+    showScreen('screen-home');
+}
+
+// ===== ADD TRANSACTION CURRENCY PICKER =====
+function showCurrencyPickerForAdd() {
+    const currencies = Object.keys(currencyData);
+    const currentIdx = currencies.indexOf(addTxCurrency);
+    addTxCurrency = currencies[(currentIdx + 1) % currencies.length];
+    const data = currencyData[addTxCurrency];
+    document.getElementById('addFlag').textContent = data.flag;
+    document.getElementById('addCode').textContent = addTxCurrency;
+    document.getElementById('addSymbol').textContent = data.symbol;
+    updateConversionPreview();
+    showToast('Transaction currency: ' + addTxCurrency);
+}
+
+function setupAddCurrencyListener() {
+    const txAmount = document.getElementById('txAmount');
+    if (txAmount) {
+        txAmount.addEventListener('input', updateConversionPreview);
+    }
+}
+
+function updateConversionPreview() {
+    const amount = parseFloat(document.getElementById('txAmount').value) || 0;
+    if (addTxCurrency !== defaultCurrency && amount > 0) {
+        const converted = convertAmount(amount, addTxCurrency, defaultCurrency);
+        const defSym = currencyData[defaultCurrency].symbol;
+        const rate = currencyData[defaultCurrency].rate / currencyData[addTxCurrency].rate;
+        document.getElementById('conversionPreview').style.display = 'block';
+        document.getElementById('previewTargetCode').textContent = defaultCurrency;
+        document.getElementById('previewConverted').textContent = defSym + converted.toFixed(2);
+        document.getElementById('previewRate').textContent = 'Rate: 1 ' + addTxCurrency + ' = ' + rate.toFixed(4) + ' ' + defaultCurrency;
+    } else {
+        document.getElementById('conversionPreview').style.display = 'none';
+    }
+}
+
+// ===== MODALS =====
+function showExportModal() {
+    const modal = document.getElementById('exportModal');
+    if (modal) modal.classList.add('active');
+}
+function closeExportModal() {
+    const modal = document.getElementById('exportModal');
+    if (modal) modal.classList.remove('active');
+}
+function showAddSplitModal() {
+    const modal = document.getElementById('splitModal');
+    if (modal) modal.classList.add('active');
+}
+function closeSplitModal() {
+    const modal = document.getElementById('splitModal');
+    if (modal) modal.classList.remove('active');
+}
+function showAddFriendModal() {
+    showToast('Add friend feature coming soon!');
+}
+
+function downloadExport(format) {
+    const range = document.getElementById('exportRange').value;
+    const exportCurr = document.getElementById('exportCurrency').value;
+    showToast('Downloading ' + format.toUpperCase() + ' in ' + (exportCurr === 'default' ? defaultCurrency : exportCurr) + '...');
+    setTimeout(function() { showToast('Download complete!'); closeExportModal(); }, 1500);
+}
+
+function exportExcel(period) {
+    showToast('Exporting Excel for ' + period + ' in ' + defaultCurrency + '...');
+}
+function exportPDF(period) {
+    showToast('Exporting PDF for ' + period + ' in ' + defaultCurrency + '...');
+}
+function saveSplit() {
+    showToast('Split expense created!');
+    closeSplitModal();
+}
+
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = message;
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    setTimeout(function() { toast.style.transform = 'translateX(-50%) translateY(-100px)'; }, 3000);
+}
+</script>
 </body>
 </html>
