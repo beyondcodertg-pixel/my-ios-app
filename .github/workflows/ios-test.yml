@@ -1,22 +1,303 @@
-name: HTML Preview
+name: Test iOS WebView App
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: macos-latest
+    
     steps:
-      - uses: actions/checkout@v4
+      - name: Get my code
+        uses: actions/checkout@v4
       
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-      
-      - name: Upload HTML
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: .
-      
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+      - name: Create iOS app with my HTML
+        run: |
+          # Create app folders
+          mkdir -p MyWebApp/MyWebApp
+          
+          # Create the Swift code that loads your HTML
+          cat > MyWebApp/MyWebApp/ViewController.swift << 'EOF'
+          import UIKit
+          import WebKit
+          class ViewController: UIViewController {
+              override func viewDidLoad() {
+                  super.viewDidLoad()
+                  let webView = WKWebView(frame: view.bounds)
+                  webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+                  view.addSubview(webView)
+                  if let path = Bundle.main.path(forResource: "index", ofType: "html") {
+                      let url = URL(fileURLWithPath: path)
+                      webView.loadFileURL(url, allowingReadAccessTo: url)
+                  }
+              }
+          }
+          EOF
+          
+          # Create AppDelegate.swift
+          cat > MyWebApp/MyWebApp/AppDelegate.swift << 'EOF'
+          import UIKit
+          @main
+          class AppDelegate: UIResponder, UIApplicationDelegate {
+              var window: UIWindow?
+              func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+                  window = UIWindow(frame: UIScreen.main.bounds)
+                  window?.rootViewController = ViewController()
+                  window?.makeKeyAndVisible()
+                  return true
+              }
+          }
+          EOF
+          
+          # Create Info.plist
+          cat > MyWebApp/MyWebApp/Info.plist << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleIdentifier</key>
+              <string>com.test.myapp</string>
+              <key>CFBundleName</key>
+              <string>MyWebApp</string>
+              <key>CFBundleVersion</key>
+              <string>1.0</string>
+              <key>CFBundleShortVersionString</key>
+              <string>1.0</string>
+              <key>UILaunchStoryboardName</key>
+              <string>LaunchScreen</string>
+              <key>UIRequiredDeviceCapabilities</key>
+              <array>
+                  <string>armv7</string>
+              </array>
+              <key>UISupportedInterfaceOrientations</key>
+              <array>
+                  <string>UIInterfaceOrientationPortrait</string>
+                  <string>UIInterfaceOrientationLandscapeLeft</string>
+                  <string>UIInterfaceOrientationLandscapeRight</string>
+              </array>
+          </dict>
+          </plist>
+          EOF
+          
+          # Create project.pbxproj (minimal Xcode project file)
+          mkdir -p MyWebApp/MyWebApp.xcodeproj
+          cat > MyWebApp/MyWebApp.xcodeproj/project.pbxproj << 'EOF'
+          // !$*UTF8*$!
+          {
+              archiveVersion = 1;
+              classes = {
+              };
+              objectVersion = 56;
+              objects = {
+                  /* Begin PBXBuildFile section */
+                  000000000000000000000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000002 /* AppDelegate.swift */; };
+                  000000000000000000000003 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000004 /* ViewController.swift */; };
+                  000000000000000000000005 /* index.html in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000006 /* index.html */; };
+                  /* End PBXBuildFile section */
+          
+                  /* Begin PBXFileReference section */
+                  000000000000000000000002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+                  000000000000000000000004 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+                  000000000000000000000006 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+                  000000000000000000000007 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+                  000000000000000000000008 /* MyWebApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyWebApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+                  /* End PBXFileReference section */
+          
+                  /* Begin PBXFrameworksBuildPhase section */
+                  000000000000000000000009 /* Frameworks */ = {
+                      isa = PBXFrameworksBuildPhase;
+                      buildActionMask = 2147483647;
+                      files = (
+                      );
+                      runOnlyForDeploymentPostprocessing = 0;
+                  };
+                  /* End PBXFrameworksBuildPhase section */
+          
+                  /* Begin PBXGroup section */
+                  000000000000000000000010 = {
+                      isa = PBXGroup;
+                      children = (
+                          000000000000000000000011 /* MyWebApp */,
+                          000000000000000000000012 /* Products */,
+                      );
+                      sourceTree = "<group>";
+                  };
+                  000000000000000000000011 /* MyWebApp */ = {
+                      isa = PBXGroup;
+                      children = (
+                          000000000000000000000002 /* AppDelegate.swift */,
+                          000000000000000000000004 /* ViewController.swift */,
+                          000000000000000000000006 /* index.html */,
+                          000000000000000000000007 /* Info.plist */,
+                      );
+                      path = MyWebApp;
+                      sourceTree = "<group>";
+                  };
+                  000000000000000000000012 /* Products */ = {
+                      isa = PBXGroup;
+                      children = (
+                          000000000000000000000008 /* MyWebApp.app */,
+                      );
+                      name = Products;
+                      sourceTree = "<group>";
+                  };
+                  /* End PBXGroup section */
+          
+                  /* Begin PBXNativeTarget section */
+                  000000000000000000000013 /* MyWebApp */ = {
+                      isa = PBXNativeTarget;
+                      buildConfigurationList = 000000000000000000000014 /* Build configuration list for PBXNativeTarget "MyWebApp" */;
+                      buildPhases = (
+                          000000000000000000000009 /* Frameworks */,
+                          000000000000000000000015 /* Sources */,
+                          000000000000000000000016 /* Resources */,
+                      );
+                      buildRules = (
+                      );
+                      dependencies = (
+                      );
+                      name = MyWebApp;
+                      productName = MyWebApp;
+                      productReference = 000000000000000000000008 /* MyWebApp.app */;
+                      productType = "com.apple.product-type.application";
+                  };
+                  /* End PBXNativeTarget section */
+          
+                  /* Begin PBXProject section */
+                  000000000000000000000017 /* Project object */ = {
+                      isa = PBXProject;
+                      buildConfigurationList = 000000000000000000000018 /* Build configuration list for PBXProject "MyWebApp" */;
+                      compatibilityVersion = "Xcode 14.0";
+                      developmentRegion = en;
+                      hasScannedForEncodings = 0;
+                      knownRegions = (
+                          en,
+                          Base,
+                      );
+                      mainGroup = 000000000000000000000010;
+                      productRefGroup = 000000000000000000000012 /* Products */;
+                      projectDirPath = "";
+                      projectRoot = "";
+                      targets = (
+                          000000000000000000000013 /* MyWebApp */,
+                      );
+                  };
+                  /* End PBXProject section */
+          
+                  /* Begin PBXResourcesBuildPhase section */
+                  000000000000000000000016 /* Resources */ = {
+                      isa = PBXResourcesBuildPhase;
+                      buildActionMask = 2147483647;
+                      files = (
+                          000000000000000000000005 /* index.html in Resources */,
+                      );
+                      runOnlyForDeploymentPostprocessing = 0;
+                  };
+                  /* End PBXResourcesBuildPhase section */
+          
+                  /* Begin PBXSourcesBuildPhase section */
+                  000000000000000000000015 /* Sources */ = {
+                      isa = PBXSourcesBuildPhase;
+                      buildActionMask = 2147483647;
+                      files = (
+                          000000000000000000000001 /* AppDelegate.swift in Sources */,
+                          000000000000000000000003 /* ViewController.swift in Sources */,
+                      );
+                      runOnlyForDeploymentPostprocessing = 0;
+                  };
+                  /* End PBXSourcesBuildPhase section */
+          
+                  /* Begin XCBuildConfiguration section */
+                  000000000000000000000019 /* Debug */ = {
+                      isa = XCBuildConfiguration;
+                      buildSettings = {
+                          ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+                          CODE_SIGN_STYLE = Automatic;
+                          CURRENT_PROJECT_VERSION = 1;
+                          GENERATE_INFOPLIST_FILE = YES;
+                          INFOPLIST_FILE = MyWebApp/Info.plist;
+                          IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+                          LD_RUNPATH_SEARCH_PATHS = (
+                              "$(inherited)",
+                              "@executable_path/Frameworks",
+                          );
+                          MARKETING_VERSION = 1.0;
+                          PRODUCT_BUNDLE_IDENTIFIER = com.test.myapp;
+                          PRODUCT_NAME = "$(TARGET_NAME)";
+                          SDKROOT = iphoneos;
+                          SWIFT_EMIT_LOC_STRINGS = YES;
+                          SWIFT_VERSION = 5.0;
+                          TARGETED_DEVICE_FAMILY = "1,2";
+                      };
+                      name = Debug;
+                  };
+                  000000000000000000000020 /* Release */ = {
+                      isa = XCBuildConfiguration;
+                      buildSettings = {
+                          ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+                          CODE_SIGN_STYLE = Automatic;
+                          CURRENT_PROJECT_VERSION = 1;
+                          GENERATE_INFOPLIST_FILE = YES;
+                          INFOPLIST_FILE = MyWebApp/Info.plist;
+                          IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+                          LD_RUNPATH_SEARCH_PATHS = (
+                              "$(inherited)",
+                              "@executable_path/Frameworks",
+                          );
+                          MARKETING_VERSION = 1.0;
+                          PRODUCT_BUNDLE_IDENTIFIER = com.test.myapp;
+                          PRODUCT_NAME = "$(TARGET_NAME)";
+                          SDKROOT = iphoneos;
+                          SWIFT_EMIT_LOC_STRINGS = YES;
+                          SWIFT_VERSION = 5.0;
+                          TARGETED_DEVICE_FAMILY = "1,2";
+                      };
+                      name = Release;
+                  };
+                  000000000000000000000021 /* Debug */ = {
+                      isa = XCBuildConfiguration;
+                      buildSettings = {
+                      };
+                      name = Debug;
+                  };
+                  000000000000000000000022 /* Release */ = {
+                      isa = XCBuildConfiguration;
+                      buildSettings = {
+                      };
+                      name = Release;
+                  };
+                  /* End XCBuildConfiguration section */
+          
+                  /* Begin XCConfigurationList section */
+                  000000000000000000000014 /* Build configuration list for PBXNativeTarget "MyWebApp" */ = {
+                      isa = XCConfigurationList;
+                      buildConfigurations = (
+                          000000000000000000000019 /* Debug */,
+                          000000000000000000000020 /* Release */,
+                      );
+                      defaultConfigurationIsVisible = 0;
+                      defaultConfigurationName = Release;
+                  };
+                  000000000000000000000018 /* Build configuration list for PBXProject "MyWebApp" */ = {
+                      isa = XCConfigurationList;
+                      buildConfigurations = (
+                          000000000000000000000021 /* Debug */,
+                          000000000000000000000022 /* Release */,
+                      );
+                      defaultConfigurationIsVisible = 0;
+                      defaultConfigurationName = Release;
+                  };
+                  /* End XCConfigurationList section */
+              };
+              rootObject = 000000000000000000000017 /* Project object */;
+          }
+          EOF
+          
+          # Copy your HTML into the app
+          cp index.html MyWebApp/MyWebApp/
+          
+          # Build the app for iPhone simulator (no signing needed)
+          cd MyWebApp
+          xcodebuild -project MyWebApp.xcodeproj -scheme MyWebApp -destination 'platform=iOS Simulator,name=iPhone 15' -allowProvisioningUpdates CODE_SIGNING_ALLOWED=NO
+        shell: bash
